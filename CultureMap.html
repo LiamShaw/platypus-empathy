@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Culture Map - Connected Profile</title>
+    <title>Culture Map - Full Descriptions</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
 
-        /* Perfectly standard, native browser sliders */
+        /* Standard Slider */
         input[type=range] {
-            width: 100%;
-            cursor: pointer;
-            accent-color: #4f46e5; /* Tailwind Indigo-600 */
-            position: relative;
-            z-index: 20;
+            @apply w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 relative z-40;
         }
 
-        /* Smooth animation for the connecting line */
-        .signature-path { 
-            transition: d 0.1s ease-out; 
+        /* SVG Signature Line */
+        .signature-line { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 20; 
         }
     </style>
 </head>
@@ -34,13 +31,19 @@
             </div>
             
             <div class="flex flex-wrap gap-3">
+                <button @click="toggleDescriptions()" 
+                        :class="showFullDescriptions ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-slate-300 text-slate-600'"
+                        class="px-4 py-2 border-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2 shadow-sm hover:shadow">
+                    <span x-text="showFullDescriptions ? '● Hide Full Descriptions' : '○ See Full Descriptions'"></span>
+                </button>
+
                 <button @click="showCountries = !showCountries" 
                         :class="showCountries ? 'bg-amber-100 border-amber-500 text-amber-700' : 'bg-white border-slate-300 text-slate-600'"
-                        class="px-4 py-2 border-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2 shadow-sm">
+                        class="px-4 py-2 border-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2 shadow-sm hover:shadow">
                     <span x-text="showCountries ? '● Hide Benchmarks' : '○ Show Benchmarks'"></span>
                 </button>
                 <button @click="reset()" class="px-4 py-2 border-2 border-slate-200 bg-white rounded-xl text-xs font-bold uppercase text-slate-400 hover:text-red-500 transition-all shadow-sm">Reset</button>
-                <button @click="window.print()" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase shadow-lg hover:bg-slate-800 transition-all">Export PDF</button>
+                <button @click="window.print()" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase shadow-lg hover:bg-slate-800 transition-all">Export</button>
             </div>
         </header>
 
@@ -48,12 +51,12 @@
             
             <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 0;" id="svg-container">
                 <path :d="pathData" 
-                    fill="none" 
-                    stroke="#4f46e5" 
-                    stroke-width="8" 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round" 
-                    class="signature-path opacity-60" />
+                      fill="none" 
+                      stroke="#4f46e5" 
+                      stroke-width="8" 
+                      stroke-linecap="round" 
+                      stroke-linejoin="round" 
+                      class="signature-line opacity-60" />
             </svg>
 
             <div class="grid lg:grid-cols-2 gap-x-16 gap-y-12 relative z-10">
@@ -66,14 +69,16 @@
                                 <h3 class="text-sm font-black uppercase tracking-widest text-slate-800" x-text="d.title"></h3>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-6">
+                            <div class="grid grid-cols-2 gap-6 items-start">
                                 <div>
                                     <h4 class="text-[9px] font-black text-slate-400 uppercase mb-1" x-text="d.leftLabel"></h4>
-                                    <p class="text-[11px] leading-relaxed text-slate-600" x-text="d.leftDesc"></p>
+                                    <p class="text-[11px] leading-relaxed text-slate-600 transition-all" 
+                                       x-text="showFullDescriptions ? d.leftFull : d.leftDesc"></p>
                                 </div>
-                                <div class="border-l border-slate-100 pl-4">
+                                <div class="border-l border-slate-100 pl-4 h-full">
                                     <h4 class="text-[9px] font-black text-slate-400 uppercase mb-1" x-text="d.rightLabel"></h4>
-                                    <p class="text-[11px] leading-relaxed text-slate-600" x-text="d.rightDesc"></p>
+                                    <p class="text-[11px] leading-relaxed text-slate-600 transition-all" 
+                                       x-text="showFullDescriptions ? d.rightFull : d.rightDesc"></p>
                                 </div>
                             </div>
                         </div>
@@ -99,6 +104,7 @@
 
                             <div class="flex justify-between mt-3">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter w-1/3 text-left leading-tight" x-text="d.leftLabel"></span>
+                                <span class="text-[9px] font-black text-slate-300 italic uppercase">Scale</span>
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter w-1/3 text-right leading-tight" x-text="d.rightLabel"></span>
                             </div>
 
@@ -113,9 +119,9 @@
         function cultureApp() {
             return {
                 showCountries: false,
-                pathData: "", // Holds the SVG line string
+                showFullDescriptions: false,
+                pathData: "",
                 
-                // Benchmark Data
                 benchmarkData: [
                     [ { name: "US", pos: 5, level: 2 }, { name: "Netherlands", pos: 15, level: 2 }, { name: "Finland", pos: 25, level: 2 }, { name: "Spain", pos: 50, level: 2 }, { name: "Italy", pos: 55, level: 2 }, { name: "Singapore", pos: 65, level: 2 }, { name: "Iran", pos: 75, level: 2 }, { name: "China", pos: 85, level: 2 }, { name: "Japan", pos: 95, level: 2 }, { name: "Australia", pos: 10, level: 1 }, { name: "Germany", pos: 20, level: 1 }, { name: "Denmark", pos: 30, level: 1 }, { name: "Poland", pos: 40, level: 1 }, { name: "Brazil", pos: 45, level: 1 }, { name: "Mexico", pos: 55, level: 1 }, { name: "France", pos: 60, level: 1 }, { name: "India", pos: 75, level: 1 }, { name: "Kenya", pos: 85, level: 1 }, { name: "Korea", pos: 90, level: 1 }, { name: "Canada", pos: 10, level: 0 }, { name: "UK", pos: 30, level: 0 }, { name: "Argentina", pos: 50, level: 0 }, { name: "Peru", pos: 60, level: 0 }, { name: "Russia", pos: 70, level: 0 }, { name: "Saudi Arabia", pos: 80, level: 0 }, { name: "Indonesia", pos: 95, level: 0 } ],
                     [ { name: "Russia", pos: 10, level: 2 }, { name: "France", pos: 20, level: 2 }, { name: "Italy", pos: 35, level: 2 }, { name: "US", pos: 50, level: 2 }, { name: "UK", pos: 55, level: 2 }, { name: "Brazil", pos: 60, level: 2 }, { name: "India", pos: 70, level: 2 }, { name: "Saudi Arabia", pos: 80, level: 2 }, { name: "Japan", pos: 95, level: 2 }, { name: "Israel", pos: 5, level: 1 }, { name: "Germany", pos: 15, level: 1 }, { name: "Norway", pos: 25, level: 1 }, { name: "Australia", pos: 35, level: 1 }, { name: "Canada", pos: 50, level: 1 }, { name: "Mexico", pos: 65, level: 1 }, { name: "China", pos: 75, level: 1 }, { name: "Korea", pos: 85, level: 1 }, { name: "Thailand", pos: 95, level: 1 }, { name: "Netherlands", pos: 10, level: 0 }, { name: "Denmark", pos: 25, level: 0 }, { name: "Spain", pos: 35, level: 0 }, { name: "Argentina", pos: 55, level: 0 }, { name: "Kenya", pos: 70, level: 0 }, { name: "Ghana", pos: 80, level: 0 }, { name: "Indonesia", pos: 95, level: 0 } ],
@@ -127,22 +133,76 @@
                     [ { name: "Germany", pos: 5, level: 2 }, { name: "Switzerland", pos: 15, level: 2 }, { name: "Japan", pos: 25, level: 2 }, { name: "Netherlands", pos: 35, level: 2 }, { name: "Sweden", pos: 45, level: 2 }, { name: "Austria", pos: 55, level: 2 }, { name: "UK", pos: 10, level: 1 }, { name: "US", pos: 20, level: 1 }, { name: "Denmark", pos: 30, level: 1 }, { name: "Poland", pos: 40, level: 1 }, { name: "Spain", pos: 60, level: 1 }, { name: "Italy", pos: 70, level: 1 }, { name: "Russia", pos: 60, level: 0 }, { name: "Brazil", pos: 70, level: 0 }, { name: "Turkey", pos: 80, level: 0 }, { name: "Mexico", pos: 90, level: 0 }, { name: "Peru", pos: 95, level: 0 } ]
                 ],
 
+                // Data Extracted directly from the provided images
                 dimensions: [
-                    { title: "Communicating", value: 50, leftLabel: "Low-Context", rightLabel: "High-Context", leftDesc: "Precise, simple and clear. Face value.", rightDesc: "Sophisticated, nuanced, layered. Between lines." },
-                    { title: "Evaluating", value: 50, leftLabel: "Direct Negative", rightLabel: "Indirect Negative", leftDesc: "Frank, blunt, honest feedback.", rightDesc: "Subtle, diplomatic. Wrapped in positive." },
-                    { title: "Persuading", value: 50, leftLabel: "Principles-First", rightLabel: "Applications-First", leftDesc: "Develop theory before fact. Why?", rightDesc: "Fact or bullets first. How?" },
-                    { title: "Leading", value: 50, leftLabel: "Egalitarian", rightLabel: "Hierarchical", leftDesc: "Flat structures. Boss as facilitator.", rightDesc: "Status is important. Boss as director." },
-                    { title: "Deciding", value: 50, leftLabel: "Consensual", rightLabel: "Top-Down", leftDesc: "Group agreement, unanimous.", rightDesc: "Individual decisions, usually boss." },
-                    { title: "Trusting", value: 50, leftLabel: "Task-Based", rightLabel: "Relationship-Based", leftDesc: "Trust through work and reliability.", rightDesc: "Trust through sharing personal time/meals." },
-                    { title: "Disagreeing", value: 50, leftLabel: "Confrontational", rightLabel: "Avoids Conflict", leftDesc: "Debate is positive and healthy.", rightDesc: "Confrontation harms group harmony." },
-                    { title: "Scheduling", value: 50, leftLabel: "Linear-Time", rightLabel: "Flexible-Time", leftDesc: "Sequential. Deadlines over flexibility.", rightDesc: "Fluid tasks. Adaptability over promptness." }
+                    { 
+                        title: "Communicating", value: 50, leftLabel: "Low-Context", rightLabel: "High-Context", 
+                        leftDesc: "Precise, simple and clear. Face value.", 
+                        rightDesc: "Sophisticated, nuanced, layered. Between lines.",
+                        leftFull: "Good communication is precise, simple, and clear. Messages are expressed and understood at face value. Repetition is appreciated if it helps clarify the communication.",
+                        rightFull: "Good communication is sophisticated, nuanced, and layered. Messages are both spoken and read between the lines. Messages are often implied but not plainly expressed."
+                    },
+                    { 
+                        title: "Evaluating", value: 50, leftLabel: "Direct Negative", rightLabel: "Indirect Negative", 
+                        leftDesc: "Frank, blunt, honest feedback.", 
+                        rightDesc: "Subtle, diplomatic. Wrapped in positive.",
+                        leftFull: "Negative feedback to a colleague is provided frankly, bluntly, honestly. Negative messages stand alone, not softened by positive ones. Absolute descriptors are often used (totally inappropriate, completely unprofessional) when criticizing. Criticism may be given to an individual in front of a group.",
+                        rightFull: "Negative feedback to a colleague is provided softly, subtly, diplomatically. Positive messages are used to wrap negative ones. Qualifying descriptors are often used (sort of inappropriate, slightly unprofessional) when criticizing. Criticism is given only in private."
+                    },
+                    { 
+                        title: "Persuading", value: 50, leftLabel: "Principles-First", rightLabel: "Applications-First", 
+                        leftDesc: "Develop theory before fact. Why?", 
+                        rightDesc: "Fact or bullets first. How?",
+                        leftFull: "Individuals have been trained to first develop the theory or complex concept before presenting a fact, statement, or opinion. The preference is to begin a message or report by building up a theoretical argument before moving on to a conclusion. The conceptual principles underlying each situation are valued.",
+                        rightFull: "Individuals are trained to begin with a fact, statement, or opinion and later add concepts to back up or explain the conclusion as necessary. The preference is to begin a message or report with an executive summary or bullet points. Discussions are approached in a practical, concrete manner. Theoretical or philosophical discussions are avoided in a business environment."
+                    },
+                    { 
+                        title: "Leading", value: 50, leftLabel: "Egalitarian", rightLabel: "Hierarchical", 
+                        leftDesc: "Flat structures. Boss as facilitator.", 
+                        rightDesc: "Status is important. Boss as director.",
+                        leftFull: "The ideal distance between a boss and a subordinate is low. The best boss is a facilitator among equals. Organizational structures are flat. Communication often skips hierarchical lines.",
+                        rightFull: "The ideal distance between a boss and a subordinate is high. The best boss is a strong director who leads from the front. Status is important. Organizational structures are multilayered and fixed. Communication follows set hierarchical lines."
+                    },
+                    { 
+                        title: "Deciding", value: 50, leftLabel: "Consensual", rightLabel: "Top-Down", 
+                        leftDesc: "Group agreement, unanimous.", 
+                        rightDesc: "Individual decisions, usually boss.",
+                        leftFull: "Decisions are made in groups through unanimous agreement.",
+                        rightFull: "Decisions are made by individuals (usually the boss)."
+                    },
+                    { 
+                        title: "Trusting", value: 50, leftLabel: "Task-Based", rightLabel: "Relationship-Based", 
+                        leftDesc: "Trust through work and reliability.", 
+                        rightDesc: "Trust through sharing personal time/meals.",
+                        leftFull: "Trust is built through business-related activities. Work relationships are built and dropped easily, based on the practicality of the situation. You do good work consistently, you are reliable, I enjoy working with you, I trust you.",
+                        rightFull: "Trust is built through sharing meals, evening drinks, and visits at the coffee machine. Work relationships build up slowly over the long term. I've seen who you are at a deep level, I've shared personal time with you, I know others well who trust you, I trust you."
+                    },
+                    { 
+                        title: "Disagreeing", value: 50, leftLabel: "Confrontational", rightLabel: "Avoids Confrontation", 
+                        leftDesc: "Debate is positive and healthy.", 
+                        rightDesc: "Confrontation harms group harmony.",
+                        leftFull: "Disagreement and debate are positive for the team or organization. Open confrontation is appropriate and will not negatively impact the relationship.",
+                        rightFull: "Disagreement and debate are negative for the team or organization. Open confrontation is inappropriate and will break group harmony or negatively impact the relationship."
+                    },
+                    { 
+                        title: "Scheduling", value: 50, leftLabel: "Linear-Time", rightLabel: "Flexible-Time", 
+                        leftDesc: "Sequential. Deadlines over flexibility.", 
+                        rightDesc: "Fluid tasks. Adaptability over promptness.",
+                        leftFull: "Project steps are approached in a sequential fashion, completing one task before beginning the next. One thing at a time. No interruptions. The focus is on the deadline and sticking to the schedule. Emphasis is on promptness and good organization over flexibility.",
+                        rightFull: "Project steps are approached in a fluid manner, changing tasks as opportunities arise. Many things are dealt with at once and interruptions accepted. The focus is on adaptability, and flexibility is valued over organization."
+                    }
                 ],
 
                 init() {
-                    // Ensures the line draws immediately after the HTML layout completes
                     setTimeout(() => { this.drawPath(); }, 100);
-                    // Redraws the line if the user resizes the browser window
                     window.addEventListener('resize', () => { this.drawPath(); });
+                },
+
+                // Handles the toggle and forces a redraw because the card heights change
+                toggleDescriptions() {
+                    this.showFullDescriptions = !this.showFullDescriptions;
+                    // Wait for Alpine to render the new text heights, then redraw SVG line
+                    setTimeout(() => { this.drawPath(); }, 50);
                 },
 
                 getSpacedCountries(index) {
@@ -180,7 +240,6 @@
                         const val = Number(this.dimensions[i].value);
                         const rect = slider.getBoundingClientRect();
                         
-                        // Exact geometric center calculation for standard sliders
                         const thumbWidth = 16; 
                         const ratio = val / 100;
                         const availableWidth = rect.width - thumbWidth;
@@ -196,7 +255,7 @@
 
                 reset() {
                     this.dimensions.forEach(d => d.value = 50);
-                    this.drawPath(); // Force redraw on reset
+                    this.drawPath(); 
                 }
             }
         }
