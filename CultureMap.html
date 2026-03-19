@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Culture Map - Connected Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* Perfectly standard, native browser sliders */
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: #4f46e5; /* Tailwind Indigo-600 */
+            position: relative;
+            z-index: 20;
+        }
+
+        /* Smooth animation for the connecting line */
+        .signature-path { 
+            transition: d 0.1s ease-out; 
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 overflow-x-hidden" x-data="cultureApp()">
+
+    <div class="max-w-7xl mx-auto py-12 px-6" x-cloak>
+        <header class="mb-12 border-b border-slate-300 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative z-30">
+            <div>
+                <h1 class="text-4xl font-black text-slate-900 tracking-tighter uppercase">The Culture Map</h1>
+                <p class="text-slate-500 font-medium mt-1">Self-Assessment vs. Global Benchmarks</p>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+                <button @click="showCountries = !showCountries" 
+                        :class="showCountries ? 'bg-amber-100 border-amber-500 text-amber-700' : 'bg-white border-slate-300 text-slate-600'"
+                        class="px-4 py-2 border-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2 shadow-sm">
+                    <span x-text="showCountries ? '● Hide Benchmarks' : '○ Show Benchmarks'"></span>
+                </button>
+                <button @click="reset()" class="px-4 py-2 border-2 border-slate-200 bg-white rounded-xl text-xs font-bold uppercase text-slate-400 hover:text-red-500 transition-all shadow-sm">Reset</button>
+                <button @click="window.print()" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase shadow-lg hover:bg-slate-800 transition-all">Export PDF</button>
+            </div>
+        </header>
+
+        <div class="relative w-full" id="map-wrapper">
+            
+            <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 0;" id="svg-container">
+                <path :d="pathData" 
+                    fill="none" 
+                    stroke="#4f46e5" 
+                    stroke-width="8" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round" 
+                    class="signature-path opacity-60" />
+            </svg>
+
+            <div class="grid lg:grid-cols-2 gap-x-16 gap-y-12 relative z-10">
+                <template x-for="(d, index) in dimensions" :key="index">
+                    <div class="contents group">
+                        
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center transition-all relative z-20">
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="bg-indigo-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shadow-sm" x-text="index + 1"></span>
+                                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800" x-text="d.title"></h3>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="text-[9px] font-black text-slate-400 uppercase mb-1" x-text="d.leftLabel"></h4>
+                                    <p class="text-[11px] leading-relaxed text-slate-600" x-text="d.leftDesc"></p>
+                                </div>
+                                <div class="border-l border-slate-100 pl-4">
+                                    <h4 class="text-[9px] font-black text-slate-400 uppercase mb-1" x-text="d.rightLabel"></h4>
+                                    <p class="text-[11px] leading-relaxed text-slate-600" x-text="d.rightDesc"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="relative flex flex-col justify-end px-4 py-8 lg:py-0 dimension-row min-h-[140px]" :data-index="index">
+                            
+                            <div class="relative w-full h-16 mb-4" x-show="showCountries" x-transition.opacity>
+                                <template x-for="country in getSpacedCountries(index)" :key="country.name">
+                                    <div class="absolute flex flex-col items-center transition-all duration-700"
+                                         :style="`left: ${country.pos}%; bottom: 0; transform: translateX(-50%);`">
+                                        <div class="bg-amber-50 border border-amber-200 text-amber-900 px-1.5 py-0.5 rounded text-[8.5px] font-bold shadow-sm whitespace-nowrap z-10"
+                                             :style="`margin-bottom: ${country.level * 16}px;`"
+                                             x-text="country.name"></div>
+                                        <div class="w-px bg-amber-300 absolute bottom-0 -z-10"
+                                             :style="`height: ${(country.level * 16) + 4}px;`"></div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="relative flex items-center w-full">
+                                <input type="range" min="5" max="95" x-model="d.value" @input="drawPath()" class="w-full">
+                            </div>
+
+                            <div class="flex justify-between mt-3">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter w-1/3 text-left leading-tight" x-text="d.leftLabel"></span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter w-1/3 text-right leading-tight" x-text="d.rightLabel"></span>
+                            </div>
+
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function cultureApp() {
+            return {
+                showCountries: false,
+                pathData: "", // Holds the SVG line string
+                
+                // Benchmark Data
+                benchmarkData: [
+                    [ { name: "US", pos: 5, level: 2 }, { name: "Netherlands", pos: 15, level: 2 }, { name: "Finland", pos: 25, level: 2 }, { name: "Spain", pos: 50, level: 2 }, { name: "Italy", pos: 55, level: 2 }, { name: "Singapore", pos: 65, level: 2 }, { name: "Iran", pos: 75, level: 2 }, { name: "China", pos: 85, level: 2 }, { name: "Japan", pos: 95, level: 2 }, { name: "Australia", pos: 10, level: 1 }, { name: "Germany", pos: 20, level: 1 }, { name: "Denmark", pos: 30, level: 1 }, { name: "Poland", pos: 40, level: 1 }, { name: "Brazil", pos: 45, level: 1 }, { name: "Mexico", pos: 55, level: 1 }, { name: "France", pos: 60, level: 1 }, { name: "India", pos: 75, level: 1 }, { name: "Kenya", pos: 85, level: 1 }, { name: "Korea", pos: 90, level: 1 }, { name: "Canada", pos: 10, level: 0 }, { name: "UK", pos: 30, level: 0 }, { name: "Argentina", pos: 50, level: 0 }, { name: "Peru", pos: 60, level: 0 }, { name: "Russia", pos: 70, level: 0 }, { name: "Saudi Arabia", pos: 80, level: 0 }, { name: "Indonesia", pos: 95, level: 0 } ],
+                    [ { name: "Russia", pos: 10, level: 2 }, { name: "France", pos: 20, level: 2 }, { name: "Italy", pos: 35, level: 2 }, { name: "US", pos: 50, level: 2 }, { name: "UK", pos: 55, level: 2 }, { name: "Brazil", pos: 60, level: 2 }, { name: "India", pos: 70, level: 2 }, { name: "Saudi Arabia", pos: 80, level: 2 }, { name: "Japan", pos: 95, level: 2 }, { name: "Israel", pos: 5, level: 1 }, { name: "Germany", pos: 15, level: 1 }, { name: "Norway", pos: 25, level: 1 }, { name: "Australia", pos: 35, level: 1 }, { name: "Canada", pos: 50, level: 1 }, { name: "Mexico", pos: 65, level: 1 }, { name: "China", pos: 75, level: 1 }, { name: "Korea", pos: 85, level: 1 }, { name: "Thailand", pos: 95, level: 1 }, { name: "Netherlands", pos: 10, level: 0 }, { name: "Denmark", pos: 25, level: 0 }, { name: "Spain", pos: 35, level: 0 }, { name: "Argentina", pos: 55, level: 0 }, { name: "Kenya", pos: 70, level: 0 }, { name: "Ghana", pos: 80, level: 0 }, { name: "Indonesia", pos: 95, level: 0 } ],
+                    [ { name: "Italy", pos: 15, level: 1 }, { name: "Russia", pos: 25, level: 1 }, { name: "Germany", pos: 35, level: 1 }, { name: "Argentina", pos: 45, level: 1 }, { name: "Sweden", pos: 55, level: 1 }, { name: "Netherlands", pos: 65, level: 1 }, { name: "Australia", pos: 80, level: 1 }, { name: "France", pos: 10, level: 0 }, { name: "Spain", pos: 20, level: 0 }, { name: "Brazil", pos: 40, level: 0 }, { name: "Mexico", pos: 50, level: 0 }, { name: "Denmark", pos: 60, level: 0 }, { name: "UK", pos: 70, level: 0 }, { name: "Canada", pos: 85, level: 0 }, { name: "US", pos: 95, level: 0 } ],
+                    [ { name: "Denmark", pos: 5, level: 2 }, { name: "Israel", pos: 15, level: 2 }, { name: "Canada", pos: 30, level: 2 }, { name: "US", pos: 40, level: 2 }, { name: "France", pos: 60, level: 2 }, { name: "Poland", pos: 70, level: 2 }, { name: "Saudi Arabia", pos: 80, level: 2 }, { name: "Japan", pos: 95, level: 2 }, { name: "Netherlands", pos: 10, level: 1 }, { name: "Finland", pos: 25, level: 1 }, { name: "UK", pos: 45, level: 1 }, { name: "Germany", pos: 50, level: 1 }, { name: "Italy", pos: 65, level: 1 }, { name: "Russia", pos: 75, level: 1 }, { name: "India", pos: 85, level: 1 }, { name: "Korea", pos: 95, level: 1 }, { name: "Sweden", pos: 5, level: 0 }, { name: "Australia", pos: 20, level: 0 }, { name: "Brazil", pos: 55, level: 0 }, { name: "Spain", pos: 60, level: 0 }, { name: "Mexico", pos: 70, level: 0 }, { name: "Peru", pos: 80, level: 0 }, { name: "China", pos: 90, level: 0 }, { name: "Nigeria", pos: 95, level: 0 } ],
+                    [ { name: "Japan", pos: 10, level: 2 }, { name: "Sweden", pos: 20, level: 2 }, { name: "Netherlands", pos: 35, level: 2 }, { name: "US", pos: 55, level: 1 }, { name: "France", pos: 65, level: 1 }, { name: "Germany", pos: 40, level: 1 }, { name: "UK", pos: 50, level: 1 }, { name: "Brazil", pos: 60, level: 0 }, { name: "Italy", pos: 70, level: 0 }, { name: "Russia", pos: 80, level: 0 }, { name: "China", pos: 90, level: 0 }, { name: "India", pos: 85, level: 0 }, { name: "Nigeria", pos: 95, level: 0 } ],
+                    [ { name: "US", pos: 5, level: 2 }, { name: "Denmark", pos: 15, level: 2 }, { name: "Germany", pos: 25, level: 2 }, { name: "UK", pos: 35, level: 2 }, { name: "Netherlands", pos: 45, level: 2 }, { name: "Australia", pos: 50, level: 2 }, { name: "Poland", pos: 45, level: 1 }, { name: "Spain", pos: 60, level: 1 }, { name: "Italy", pos: 70, level: 1 }, { name: "France", pos: 80, level: 1 }, { name: "Russia", pos: 90, level: 1 }, { name: "Brazil", pos: 60, level: 0 }, { name: "Turkey", pos: 70, level: 0 }, { name: "Mexico", pos: 80, level: 0 }, { name: "India", pos: 90, level: 0 }, { name: "China", pos: 95, level: 0 } ],
+                    [ { name: "Israel", pos: 5, level: 2 }, { name: "France", pos: 15, level: 2 }, { name: "Germany", pos: 25, level: 2 }, { name: "Denmark", pos: 35, level: 2 }, { name: "Netherlands", pos: 45, level: 2 }, { name: "Australia", pos: 55, level: 2 }, { name: "Spain", pos: 65, level: 2 }, { name: "Russia", pos: 20, level: 1 }, { name: "Italy", pos: 30, level: 1 }, { name: "US", pos: 40, level: 1 }, { name: "UK", pos: 50, level: 1 }, { name: "Brazil", pos: 60, level: 0 }, { name: "Mexico", pos: 70, level: 0 }, { name: "Singapore", pos: 80, level: 0 }, { name: "Japan", pos: 90, level: 0 }, { name: "Thailand", pos: 95, level: 0 } ],
+                    [ { name: "Germany", pos: 5, level: 2 }, { name: "Switzerland", pos: 15, level: 2 }, { name: "Japan", pos: 25, level: 2 }, { name: "Netherlands", pos: 35, level: 2 }, { name: "Sweden", pos: 45, level: 2 }, { name: "Austria", pos: 55, level: 2 }, { name: "UK", pos: 10, level: 1 }, { name: "US", pos: 20, level: 1 }, { name: "Denmark", pos: 30, level: 1 }, { name: "Poland", pos: 40, level: 1 }, { name: "Spain", pos: 60, level: 1 }, { name: "Italy", pos: 70, level: 1 }, { name: "Russia", pos: 60, level: 0 }, { name: "Brazil", pos: 70, level: 0 }, { name: "Turkey", pos: 80, level: 0 }, { name: "Mexico", pos: 90, level: 0 }, { name: "Peru", pos: 95, level: 0 } ]
+                ],
+
+                dimensions: [
+                    { title: "Communicating", value: 50, leftLabel: "Low-Context", rightLabel: "High-Context", leftDesc: "Precise, simple and clear. Face value.", rightDesc: "Sophisticated, nuanced, layered. Between lines." },
+                    { title: "Evaluating", value: 50, leftLabel: "Direct Negative", rightLabel: "Indirect Negative", leftDesc: "Frank, blunt, honest feedback.", rightDesc: "Subtle, diplomatic. Wrapped in positive." },
+                    { title: "Persuading", value: 50, leftLabel: "Principles-First", rightLabel: "Applications-First", leftDesc: "Develop theory before fact. Why?", rightDesc: "Fact or bullets first. How?" },
+                    { title: "Leading", value: 50, leftLabel: "Egalitarian", rightLabel: "Hierarchical", leftDesc: "Flat structures. Boss as facilitator.", rightDesc: "Status is important. Boss as director." },
+                    { title: "Deciding", value: 50, leftLabel: "Consensual", rightLabel: "Top-Down", leftDesc: "Group agreement, unanimous.", rightDesc: "Individual decisions, usually boss." },
+                    { title: "Trusting", value: 50, leftLabel: "Task-Based", rightLabel: "Relationship-Based", leftDesc: "Trust through work and reliability.", rightDesc: "Trust through sharing personal time/meals." },
+                    { title: "Disagreeing", value: 50, leftLabel: "Confrontational", rightLabel: "Avoids Conflict", leftDesc: "Debate is positive and healthy.", rightDesc: "Confrontation harms group harmony." },
+                    { title: "Scheduling", value: 50, leftLabel: "Linear-Time", rightLabel: "Flexible-Time", leftDesc: "Sequential. Deadlines over flexibility.", rightDesc: "Fluid tasks. Adaptability over promptness." }
+                ],
+
+                init() {
+                    // Ensures the line draws immediately after the HTML layout completes
+                    setTimeout(() => { this.drawPath(); }, 100);
+                    // Redraws the line if the user resizes the browser window
+                    window.addEventListener('resize', () => { this.drawPath(); });
+                },
+
+                getSpacedCountries(index) {
+                    let items = JSON.parse(JSON.stringify(this.benchmarkData[index]));
+                    const levels = [0, 1, 2];
+                    const MIN_GAP = 9; 
+                    
+                    levels.forEach(level => {
+                        let levelItems = items.filter(item => item.level === level).sort((a, b) => a.pos - b.pos);
+                        for (let loop = 0; loop < 5; loop++) {
+                            for (let i = 0; i < levelItems.length - 1; i++) {
+                                let diff = levelItems[i+1].pos - levelItems[i].pos;
+                                if (diff < MIN_GAP) {
+                                    let push = (MIN_GAP - diff) / 2;
+                                    levelItems[i].pos -= push;
+                                    levelItems[i+1].pos += push;
+                                }
+                            }
+                            levelItems.forEach(item => { item.pos = Math.max(2, Math.min(98, item.pos)); });
+                        }
+                    });
+                    return items;
+                },
+
+                drawPath() {
+                    const rows = document.querySelectorAll('.dimension-row');
+                    const svgContainer = document.getElementById('svg-container');
+                    if (!rows.length || !svgContainer) return;
+                    
+                    const containerRect = svgContainer.getBoundingClientRect();
+                    let points = [];
+
+                    rows.forEach((row, i) => {
+                        const slider = row.querySelector('input');
+                        const val = Number(this.dimensions[i].value);
+                        const rect = slider.getBoundingClientRect();
+                        
+                        // Exact geometric center calculation for standard sliders
+                        const thumbWidth = 16; 
+                        const ratio = val / 100;
+                        const availableWidth = rect.width - thumbWidth;
+                        
+                        const x = (rect.left - containerRect.left) + (thumbWidth / 2) + (availableWidth * ratio);
+                        const y = (rect.top - containerRect.top) + (rect.height / 2);
+                        
+                        points.push(`${x},${y}`);
+                    });
+                    
+                    this.pathData = points.length > 0 ? `M ${points.join(' L ')}` : "";
+                },
+
+                reset() {
+                    this.dimensions.forEach(d => d.value = 50);
+                    this.drawPath(); // Force redraw on reset
+                }
+            }
+        }
+    </script>
+</body>
+</html>

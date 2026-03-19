@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porter's Framework - Logic Verified</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        .bar-grow { transition: height 0.6s cubic-bezier(0.33, 1, 0.68, 1); }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-slate-900" x-data="porterApp()">
+
+    <div class="max-w-6xl mx-auto py-10 px-6" x-cloak>
+        <header class="mb-8 border-b border-gray-300 pb-6 flex justify-between items-end">
+            <div>
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Harvard Business Publishing Style</h2>
+                <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">The Five Forces Framework</h1>
+            </div>
+            <button @click="resetAll()" class="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:text-blue-800 transition-colors">Reset to Baseline</button>
+        </header>
+
+        <div class="grid lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-6 space-y-2">
+                <div class="grid grid-cols-12 px-4 py-2 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                    <div class="col-span-7">The Force</div>
+                    <div class="col-span-5 text-center">The Change</div>
+                </div>
+                
+                <template x-for="(data, key) in forces" :key="key">
+                    <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm grid grid-cols-12 items-center gap-2">
+                        <div class="col-span-7">
+                            <span class="text-slate-400 font-medium italic text-sm">IF</span>
+                            <span class="font-bold text-slate-800 text-sm ml-1" x-text="data.name"></span>
+                        </div>
+                        
+                        <div class="col-span-5 flex bg-gray-100 p-1 rounded-md shadow-inner">
+                            <button @click="setState(key, 'decrease')" 
+                                :class="data.state === 'decrease' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'"
+                                class="flex-1 py-1 rounded text-lg font-bold transition-all">↓</button>
+                            
+                            <button @click="setState(key, 'neutral')" 
+                                :class="data.state === 'neutral' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'"
+                                class="flex-1 py-1 rounded text-xs">∅</button>
+                            
+                            <button @click="setState(key, 'increase')" 
+                                :class="data.state === 'increase' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'"
+                                class="flex-1 py-1 rounded text-lg font-bold transition-all">↑</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="lg:col-span-6">
+                <div class="bg-slate-900 rounded-[2rem] p-8 shadow-2xl text-white sticky top-6">
+                    <div class="flex justify-between items-start mb-10">
+                        <h2 class="text-lg font-bold uppercase tracking-tight">Economic Value Created</h2>
+                        <div class="text-right">
+                            <span class="text-[10px] block font-black text-slate-500 uppercase">Profitability</span>
+                            <span :class="getProfit() > 40 ? 'text-emerald-400' : (getProfit() < 20 ? 'text-red-500' : 'text-white')" 
+                                  class="text-2xl font-black transition-colors" 
+                                  x-text="getProfit() > 40 ? '↑ HIGH' : (getProfit() < 20 ? '↓ LOW' : 'STABLE')"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="relative h-64 w-full">
+                        <div class="grid grid-cols-3 gap-6 h-full items-end border-b border-slate-700 pb-1">
+                            
+                            <div class="flex flex-col items-center h-full justify-end">
+                                <div class="bg-blue-500 w-full rounded-t bar-grow" :style="`height: ${getH(wtp)}%`" ></div>
+                                <div class="mt-3 text-center">
+                                    <span class="block text-[9px] font-black text-blue-400 uppercase tracking-tighter">WTP</span>
+                                    <span class="text-xl font-mono font-bold" x-text="'$'+wtp"></span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col items-center h-full justify-end">
+                                <div class="bg-red-500 w-full rounded-t bar-grow" :style="`height: ${getH(cost)}%`" ></div>
+                                <div class="mt-3 text-center">
+                                    <span class="block text-[9px] font-black text-red-400 uppercase tracking-tighter">Costs</span>
+                                    <span class="text-xl font-mono font-bold" x-text="'$'+cost"></span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col items-center h-full justify-end">
+                                <div class="bg-emerald-500 w-full rounded-t bar-grow" :style="`height: ${getH(getProfit())}%`" ></div>
+                                <div class="mt-3 text-center">
+                                    <span class="block text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Profit</span>
+                                    <span class="text-xl font-mono font-bold" x-text="'$'+getProfit()"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute left-0 right-0 border-t-2 border-dashed border-yellow-400/50 z-30 transition-all duration-500" 
+                             :style="`bottom: calc(${getH(price)}% + 68px)`">
+                            <div class="bg-yellow-400 text-slate-950 px-2 py-0.5 text-[10px] font-black rounded absolute left-1/2 -translate-x-1/2 -top-3 shadow-lg whitespace-nowrap">
+                                PRICE: $<span x-text="price"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-20 p-4 bg-white/5 rounded-xl border border-white/10">
+                        <p class="text-[10px] font-black text-slate-500 uppercase mb-1">Root Cause Analysis</p>
+                        <p class="text-xs leading-relaxed text-slate-300">
+                            Adjusting forces impacts the "Profit Wedge" by moving the ceiling (WTP), the floor (Costs), or the capture point (Price).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * LOGIC MAPPING (Injected directly from your image)
+         * - Threat of Entry/Rivalry: Impacts WTP, Price, and Cost.
+         * - Suppliers: Impacts Cost only.
+         * - Buyers: Impacts Price only.
+         * - Substitutes: Impacts WTP and Price.
+         * - Complements: Impacts WTP and Price (Positive Correlation).
+         */
+        const CONFIG = {
+            baseline: { wtp: 100, price: 80, cost: 40 },
+            forces: {
+                entry: { name: "threat of entry", impact: { wtp: -10, price: -8, cost: 6 } },
+                suppliers: { name: "supplier power", impact: { wtp: 0, price: 0, cost: 15 } },
+                buyers: { name: "buyer power", impact: { wtp: 0, price: -15, cost: 0 } },
+                substitutes: { name: "substitutes", impact: { wtp: -15, price: -10, cost: 0 } },
+                rivalry: { name: "rivalry", impact: { wtp: -8, price: -12, cost: 8 } },
+                complements: { name: "complements", impact: { wtp: 12, price: 8, cost: 0 } }
+            }
+        };
+
+        function porterApp() {
+            return {
+                wtp: CONFIG.baseline.wtp,
+                price: CONFIG.baseline.price,
+                cost: CONFIG.baseline.cost,
+                maxScale: 130,
+                forces: {},
+
+                init() {
+                    for (let key in CONFIG.forces) {
+                        this.forces[key] = { ...CONFIG.forces[key], state: 'neutral' };
+                    }
+                    this.calculate();
+                },
+
+                setState(key, state) {
+                    this.forces[key].state = state;
+                    this.calculate();
+                },
+
+                calculate() {
+                    let nWtp = CONFIG.baseline.wtp;
+                    let nPrice = CONFIG.baseline.price;
+                    let nCost = CONFIG.baseline.cost;
+
+                    for (let key in this.forces) {
+                        const f = this.forces[key];
+                        // If Increase (↑), use positive impact. If Decrease (↓), use negative.
+                        const m = (f.state === 'increase') ? 1 : (f.state === 'decrease' ? -1 : 0);
+                        
+                        nWtp += (f.impact.wtp * m);
+                        nPrice += (f.impact.price * m);
+                        nCost += (f.impact.cost * m);
+                    }
+
+                    this.wtp = Math.max(nWtp, 10);
+                    this.cost = Math.max(nCost, 5);
+                    this.price = Math.min(Math.max(nPrice, this.cost + 2), this.wtp - 1);
+
+                    const largest = Math.max(this.wtp, this.price, this.cost, (this.price - this.cost));
+                    this.maxScale = largest * 1.25; 
+                },
+
+                getH(val) {
+                    return Math.max((val / this.maxScale) * 100, 2);
+                },
+
+                getProfit() {
+                    return this.price - this.cost;
+                },
+
+                resetAll() {
+                    for (let key in this.forces) this.forces[key].state = 'neutral';
+                    this.calculate();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
