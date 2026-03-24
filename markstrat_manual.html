@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markstrat World Architecture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        .diagram-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+
+        .diagram-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #334155;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .node {
+            cursor: pointer;
+        }
+        
+        .node rect, .node polygon, .node circle, .node ellipse {
+            stroke-width: 1.5px !important;
+            rx: 6px !important; 
+            ry: 6px !important;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .node.selected rect, 
+        .node.selected polygon, 
+        .node.selected circle, 
+        .node.selected ellipse {
+            filter: brightness(0.85) saturate(1.5);
+            stroke: #0f172a !important; 
+            stroke-width: 3.5px !important;
+        }
+
+        .edgePath .path {
+            stroke: #64748b !important;
+            stroke-width: 2.5px !important;
+        }
+
+        .controls {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-download {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-download:hover {
+            background-color: #0284c7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Markstrat World Architecture</h1>
+        <p>Simulation Rules, Market Dynamics & Shortcuts</p>
+    </div>
+
+    <div class="diagram-container" id="container-Product_Arch">
+        <h2 class="diagram-title">1. Product Characteristic Architecture</h2>
+        <div class="mermaid">
+graph TD
+    classDef sonite fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
+    classDef vodite fill:#f3e8ff,stroke:#a855f7,stroke-width:2px;
+    classDef attr fill:#f8fafc,stroke:#94a3b8,stroke-width:1px;
+
+    Market[Markstrat Product Categories] --> S[Sonites<br/>Established Market]:::sonite
+    Market --> V[Vodites<br/>Emerging Market]:::vodite
+
+    S --> S1(Processing Power<br/>5 - 100 GFLOPS):::attr
+    S --> S2(Display Size<br/>4 - 40 Inches):::attr
+    S --> S3(Design Index<br/>Scale 3 - 10):::attr
+    S --> S4(Battery Life<br/>24 - 96 Hours):::attr
+    S --> S5(Features<br/>5 - 20 Total):::attr
+
+    V --> V1(Resolution<br/>20 - 100 L/mm):::attr
+    V --> V2(Energy Efficiency<br/>10 - 100 bC/Wh):::attr
+    V --> V3(Carbon Footprint<br/>5 - 50 Kg CO2):::attr
+    V --> V4(Connectivity<br/>Index 3 - 10):::attr
+    V --> V5(Apps<br/>5 - 100 Total):::attr
+        </div>
+        <div class="controls">
+            <button class="btn-download" onclick="downloadPNG('Product_Arch')">Save as PNG</button>
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-Sonite_Segments">
+        <h2 class="diagram-title">2. Sonite Customer Segments & Drivers</h2>
+        <div class="mermaid">
+graph LR
+    classDef segment fill:#fef08a,stroke:#eab308,stroke-width:2px;
+    classDef trait fill:#ffffff,stroke:#64748b,stroke-width:1px;
+
+    subgraph Sonite Market
+    Ex[Explorers]:::segment
+    Sh[Shoppers]:::segment
+    Pr[Professionals]:::segment
+    Hi[High Earners]:::segment
+    Sa[Savers]:::segment
+    end
+
+    Ex --> |Demands| T1(High Performance):::trait
+    Ex --> |Highly| T2(Price Sensitive):::trait
+
+    Sh --> |Seeks| T3(High Quality/Price Ratio):::trait
+    Sh --> |Needs| T4(Average Perf & Conv):::trait
+
+    Pr --> |Demands| T5(High Quality & Perf):::trait
+    Pr --> |Needs| T6(Easy to Use / Conv):::trait
+
+    Hi --> |Motivated by| T7(Social Status):::trait
+    Hi --> |Demands| T8(Performance & Conv):::trait
+
+    Sa --> |Cautious| T9(Cheap & Low Perf):::trait
+        </div>
+        <div class="controls">
+            <button class="btn-download" onclick="downloadPNG('Sonite_Segments')">Save as PNG</button>
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-Vodite_Adoption">
+        <h2 class="diagram-title">3. Vodite Innovation Adoption Flow</h2>
+        <div class="mermaid">
+graph LR
+    classDef inno fill:#dbeafe,stroke:#3b82f6,stroke-width:2px;
+    classDef early fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
+    classDef follow fill:#f0f9ff,stroke:#7dd3fc,stroke-width:2px;
+
+    A[Innovators<br/>Adventurous / High Income<br/>Small % of Total]:::inno -->|Strong Influence| B[Early Adopters<br/>Opinion Leaders / Avg Income<br/>Critical to Adoption]:::early
+    B -->|Advertise & Validate| C[Followers<br/>Risk Averse / Below Avg Income<br/>Bulk of Market]:::follow
+        </div>
+        <div class="controls">
+            <button class="btn-download" onclick="downloadPNG('Vodite_Adoption')">Save as PNG</button>
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-Distribution_Channels">
+        <h2 class="diagram-title">4. Distribution Channel Matrix</h2>
+        <div class="mermaid">
+graph LR
+    classDef channel fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
+    classDef margin fill:#ffedd5,stroke:#f97316,stroke-width:2px;
+    classDef trait fill:#ffffff,stroke:#64748b,stroke-width:1px;
+
+    subgraph Retail Channels
+    Spec[Specialty Stores<br/>~10,000 locations]:::channel
+    Mass[Mass Merchandisers<br/>~6,000 locations]:::channel
+    Web[Online Stores<br/>~1,000 stores]:::channel
+    end
+
+    Spec --> M1{{40% Margin}}:::margin
+    Mass --> M2{{30% Margin}}:::margin
+    Web --> M2
+
+    Spec --> T1(High Service & Support<br/>Preferred for Vodites):::trait
+    Mass --> T2(Low Price & High Vol<br/>No Vodites initially):::trait
+    Web --> T3(Convenience & Comparison<br/>High Growth Potential):::trait
+        </div>
+        <div class="controls">
+            <button class="btn-download" onclick="downloadPNG('Distribution_Channels')">Save as PNG</button>
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-Naming_Logic">
+        <h2 class="diagram-title">5. Brand Name Decoder Shortcut</h2>
+        <div class="mermaid">
+graph TD
+    classDef pos fill:#f1f5f9,stroke:#64748b,stroke-width:2px;
+    classDef firm fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
+    classDef market fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
+    classDef custom fill:#f3e8ff,stroke:#a855f7,stroke-width:2px;
+    classDef example fill:#ffffff,stroke:#94a3b8,stroke-width:1px,stroke-dasharray: 5 5;
+
+    Root([Brand Name<br/>Max 6 Characters]):::pos --> L1
+    Root --> L2
+    Root --> L3
+
+    L1[Position 1:<br/>The Firm]:::firm
+    L2[Position 2:<br/>The Market]:::market
+    L3[Positions 3-6:<br/>The Identity]:::custom
+
+    L1 --> Firm(L, M, N, R, S, or T):::firm
+    
+    L2 --> O(Letter 'O'<br/>Sonite Market):::market
+    L2 --> E(Letter 'E'<br/>Vodite Market):::market
+
+    L3 --> Free(Any Letters/Numbers<br/>Up to 4 chars):::custom
+
+    Firm -.-> Ex1(Ex: T-O-N-E<br/>Firm: Tigers | Market: Sonite):::example
+    O -.-> Ex1
+
+    Firm -.-> Ex2(Ex: M-E-G-A<br/>Firm: Marmots | Market: Vodite):::example
+    E -.-> Ex2
+        </div>
+        <div class="controls">
+            <button class="btn-download" onclick="downloadPNG('Naming_Logic')">Save as PNG</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'base',
+            themeVariables: {
+                fontFamily: '"Inter", sans-serif',
+                primaryColor: '#ffffff',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#94a3b8',
+                lineColor: '#64748b',
+                secondaryColor: '#f8fafc',
+                tertiaryColor: '#e2e8f0',
+                clusterBkg: '#f8fafc',
+                clusterBorder: '#cbd5e1',
+                fontSize: '14px'
+            },
+            flowchart: {
+                curve: 'basis',
+                nodeSpacing: 40,
+                rankSpacing: 50,
+                htmlLabels: true
+            }
+        });
+
+        await mermaid.run();
+
+        document.querySelectorAll('.node').forEach(node => {
+            node.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                const shapes = this.querySelectorAll('rect, polygon, circle, ellipse');
+                if(this.classList.contains('selected')) {
+                    shapes.forEach(shape => {
+                        shape.style.stroke = '#0f172a';
+                        shape.style.strokeWidth = '3.5px';
+                    });
+                } else {
+                    shapes.forEach(shape => {
+                        shape.style.stroke = '';
+                        shape.style.strokeWidth = '';
+                    });
+                }
+            });
+        });
+
+        window.downloadPNG = function(name) {
+            const container = document.querySelector(`#container-${name}`);
+            const svgElement = container.querySelector('svg');
+            
+            const rect = svgElement.getBoundingClientRect();
+            const scale = 2; 
+            const canvas = document.createElement('canvas');
+            canvas.width = rect.width * scale;
+            canvas.height = rect.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(scale, scale); 
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const formattedSvg = svgData.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+            
+            const blob = new Blob([formattedSvg], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            
+            const img = new Image();
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, rect.width, rect.height);
+                URL.revokeObjectURL(url);
+                
+                const pngData = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = pngData;
+                link.download = `${name}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            img.src = url;
+        };
+    </script>
+</body>
+</html>
