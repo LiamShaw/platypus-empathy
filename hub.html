@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vibe Tools</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f1f5f9;
+        color: #1e293b;
+        margin: 0;
+        padding: 60px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      h1 {
+        font-size: 2rem;
+        color: #0f172a;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: #64748b;
+        margin-bottom: 48px;
+        font-size: 0.95rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+        width: 100%;
+        max-width: 900px;
+      }
+
+      .card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 28px;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition:
+          box-shadow 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      .card:hover {
+        box-shadow: 0 10px 20px -4px rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
+      }
+
+      .card-icon {
+        font-size: 1.8rem;
+        margin-bottom: 12px;
+      }
+
+      .card h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 6px 0;
+        color: #0f172a;
+      }
+
+      .card p {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>✨ Vibe Tools</h1>
+    <p class="subtitle">Tools for classes and fun</p>
+
+    <div class="grid">
+      <a href="markstrat-diagrams.html" class="card">
+        <div class="card-icon">🔀</div>
+        <h2>Process & Strategy Logic</h2>
+        <p>
+          Profit chain, R&D planner, production flex, segment-channel map, and
+          customer needs model.
+        </p>
+      </a>
+
+      <a href="fiveforces.html" class="card">
+        <div class="card-icon">⚔️</div>
+        <h2>Five Forces Framework</h2>
+        <p>
+          Interactive Porter's Five Forces tool showing how each force shifts
+          WTP, cost, and the profit wedge.
+        </p>
+      </a>
+
+      <a href="culturemap.html" class="card">
+        <div class="card-icon">🌍</div>
+        <h2>Culture Map</h2>
+        <p>
+          Self-assessment on 8 cultural dimensions vs. global country
+          benchmarks.Printable.
+        </p>
+      </a>
+
+      <a href="groupculture.html" class="card">
+        <div class="card-icon">👥</div>
+        <h2>Culture Map — Team Edition</h2>
+        <p>
+          Multi-player version where each team member plots their profile, then
+          reveals the group overlay.
+        </p>
+      </a>
+
+      <a href="index.html" class="card">
+        <div class="card-icon">📋</div>
+        <h2>Assignment for SUS</h2>
+        <p>Moral Circles and Countries.</p>
+      </a>
+
+      <!-- Add more cards here following the same pattern -->
+    </div>
+  </body>
+</html>
