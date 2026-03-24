@@ -35,7 +35,7 @@
             padding: 40px;
             margin-bottom: 40px;
             width: 100%;
-            max-width: 1100px; /* Expanded to fit the new 3-level diagram comfortably */
+            max-width: 900px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
 
@@ -137,14 +137,13 @@ graph TD
     </div>
 
     <div class="diagram-container" id="container-Sonite_Segments">
-        <h2 class="diagram-title">2. Sonite Customer Segments, Drivers & R&D Fulfillment</h2>
+        <h2 class="diagram-title">2. Sonite Customer Segments & Drivers</h2>
         <div class="mermaid">
 graph LR
     classDef segment fill:#fef08a,stroke:#eab308,stroke-width:2px;
     classDef trait fill:#ffffff,stroke:#64748b,stroke-width:1px;
-    classDef attr fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
 
-    subgraph Target Segments
+    subgraph Sonite Market
     Ex["Explorers"]:::segment
     Sh["Shoppers"]:::segment
     Pr["Professionals"]:::segment
@@ -152,33 +151,19 @@ graph LR
     Sa["Savers"]:::segment
     end
 
-    %% Explorers
     Ex --> |Demands| T1["High Performance"]:::trait
     Ex --> |Highly| T2["Price Sensitive"]:::trait
-    T1 --> A1["High Power & Large Display<br/>(Low focus on Battery/Design)"]:::attr
-    T2 --> A2["Low Retail Price<br/>(Requires strictly managed Base Cost)"]:::attr
 
-    %% Shoppers
     Sh --> |Seeks| T3["High Quality/Price Ratio"]:::trait
     Sh --> |Needs| T4["Average Perf & Conv"]:::trait
-    T3 --> A3["Aggressive/Competitive Pricing<br/>with Solid Margins"]:::attr
-    T4 --> A4["Mid-Range targets for<br/>all 5 Physical Attributes"]:::attr
 
-    %% Professionals
     Pr --> |Demands| T5["High Quality & Perf"]:::trait
     Pr --> |Needs| T6["Easy to Use / Conv"]:::trait
-    T5 --> A5["High Power & Display,<br/>High Price (Price = Quality Signal)"]:::attr
-    T6 --> A6["High Design Index &<br/>High Feature Count"]:::attr
 
-    %% High Earners
     Hi --> |Motivated by| T7["Social Status"]:::trait
     Hi --> |Demands| T8["Performance & Conv"]:::trait
-    T7 --> A7["Premium Price Point &<br/>Top Design Index"]:::attr
-    T8 --> A8["High Specs across the board<br/>(Power, Disp, Bat, Feat)"]:::attr
 
-    %% Savers
     Sa --> |Cautious| T9["Cheap & Low Perf"]:::trait
-    T9 --> A9["Lowest Price & Base Cost,<br/>Low Power/Display,<br/>Average Conv (Bat/Des)"]:::attr
         </div>
         <div class="controls">
             <button class="btn-download" onclick="downloadPNG('Sonite_Segments')">Save as PNG</button>
