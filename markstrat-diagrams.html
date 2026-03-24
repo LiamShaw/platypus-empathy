@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Process Diagrams</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        .diagram-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+
+        .diagram-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #334155;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+.node rect, .node polygon, .node circle, .node ellipse {
+    filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.08));
+    stroke-width: 1.5px !important;
+    transition: filter 0.2s ease, stroke-width 0.2s ease;
+}
+
+/* Hover */
+.node:hover rect, .node:hover polygon,
+.node:hover circle, .node:hover ellipse {
+    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.2)) brightness(0.92);
+    stroke-width: 3px !important;
+}
+
+/* Click-toggled selected state */
+.node.selected rect, .node.selected polygon,
+.node.selected circle, .node.selected ellipse {
+    filter: brightness(0.75) saturate(1.5) drop-shadow(0px 6px 10px rgba(0,0,0,0.25));
+    stroke-width: 3.5px !important;
+    stroke: #0f172a !important;
+}
+
+        .edgePath .path {
+            stroke: #64748b !important;
+            stroke-width: 2.5px !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Process & Strategy Logic</h1>
+    </div>
+
+    <div class="diagram-container" id="container-Profit_Chain">
+        <h2 class="diagram-title">1. Profit Chain Logic</h2>
+        <div class="mermaid">
+graph TD
+    classDef metrics fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
+    classDef target fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
+
+    subgraph Decisions
+    Adv[Advertising Media & Research]
+    SF[Sales Force FTEs]
+    Prod[Production Plan]
+    Price[Price Selection]
+    end
+
+    Adv --> Aware(Brand Awareness):::metrics
+    Aware --> Consid(Consideration Set):::metrics
+    Consid --> Intent(Purchase Intention):::metrics
+
+    SF --> Avail(Distribution Coverage):::metrics
+    Prod --> Avail
+
+    Intent --> Sales{{Actual Sales}}
+    Avail --> Sales
+
+    Price --> Margin(Unit Margin):::metrics
+    Prod --> Margin
+
+    Sales --> Cont(Contribution)
+    Margin --> Cont
+    Cont --> SPI((SPI)):::target
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-Research_Tree">
+        <h2 class="diagram-title">2. Research Study Tree</h2>
+        <div class="mermaid">
+graph LR
+    classDef start fill:#fef08a,stroke:#eab308,stroke-width:2px;
+    classDef report fill:#ffffff,stroke:#3b82f6,stroke-width:2px;
+
+    Goal{{What do you need?}}:::start
+
+    Goal --> G1(Growth/Size)
+    G1 --> R1[Market Forecast]:::report
+
+    Goal --> G2(Awareness/Habits)
+    G2 --> R2[Consumer Survey]:::report
+
+    Goal --> G3(Shares/Coverage)
+    G3 --> R3[Consumer Panel]:::report
+    G3 --> R4[Distribution Panel]:::report
+
+    Goal --> G4(Perceptions/Ideals)
+    G4 --> R5[Semantic Scales]:::report
+    G4 --> R6[MDS Study]:::report
+
+    Goal --> G5(Trade-offs)
+    G5 --> R7[Conjoint Analysis]:::report
+
+    Goal --> G6(Comp Intel)
+    G6 --> R8[Competitive Estimates]:::report
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-RD_Planner">
+        <h2 class="diagram-title">3. R&D Project Planner</h2>
+        <div class="mermaid">
+graph TD
+    classDef start fill:#f1f5f9,stroke:#64748b,stroke-width:2px;
+    classDef action fill:#dbeafe,stroke:#3b82f6,stroke-width:2px;
+
+    A([Start]):::start --> B[Target Segment & Position]
+    B --> C[Set Phys Attributes]
+    C --> D[Est. Min Base Cost]
+    D --> E{Strategy?}
+    E -- Low Cost --> F[High Budget / High Margin]:::action
+    E -- Fast R&D --> G[Low Budget / Low Margin]:::action
+    F --> H[Submit Project]
+    G --> H
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-Production_Logic">
+        <h2 class="diagram-title">4. Production Flex Logic</h2>
+        <div class="mermaid">
+graph TD
+    classDef start fill:#f8fafc,stroke:#94a3b8,stroke-width:2px;
+    classDef success fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
+    classDef warning fill:#ffedd5,stroke:#f97316,stroke-width:2px;
+
+    A[Start: Forecast Demand for Period]:::start --> B{Check Inventory on Hand}
+    B --> C[Calculate Production Needed:<br/>Forecast - Inventory]
+    C --> D{Is the gap > 20%?}
+    D -- No --> E[Set Production = Needed Value]
+    D -- Yes --> F[Set Production = Needed Value]
+    F --> G[Note: Firm will auto-flex<br/>up or down by 20% max]:::warning
+    E --> H[Optimal: No Stock-outs / No Excess Inv]:::success
+    G --> H
+        </div>
+    </div>
+
+    <div class="diagram-container" id="container-Channel_Map">
+        <h2 class="diagram-title">5. Segment Channel Map</h2>
+        <div class="mermaid">
+graph LR
+    classDef segment fill:#f3e8ff,stroke:#a855f7,stroke-width:2px;
+    classDef channel fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
+
+    subgraph Segments
+    Ex(Explorers):::segment
+    Sh(Shoppers):::segment
+    Pr(Professionals):::segment
+    Hi(High Earners):::segment
+    Sa(Savers):::segment
+    end
+
+    subgraph Channels
+    Spec[Specialty Stores]:::channel
+    Mass[Mass Merchandisers]:::channel
+    Online[Online Stores]:::channel
+    end
+
+    Ex --> Spec & Online
+    Sh --> Mass & Online
+    Pr --> Spec
+    Hi --> Spec
+    Sa --> Mass
+        </div>
+    </div>
+
+<div class="diagram-container" id="container-Customer_Needs">
+    <h2 class="diagram-title">6. Sonite Customer Needs Model</h2>
+    <div class="mermaid">
+graph LR
+    classDef need fill:#d9f99d,stroke:#65a30d,stroke-width:2px;
+    classDef attr fill:#bfdbfe,stroke:#3b82f6,stroke-width:2px;
+
+    subgraph Customer Needs
+    CN1(Economy):::need
+    CN2(Performance):::need
+    CN3(Convenience):::need
+    end
+
+    subgraph Brand Characteristics
+    Price[Price]:::attr
+    Power[Processing Power]:::attr
+    Display[Display Size]:::attr
+    Design[Design]:::attr
+    Features[No. of Features]:::attr
+    Battery[Battery Life]:::attr
+    end
+
+    Price --> CN1
+    Power --> CN2
+    Display --> CN2
+    Design --> CN3
+    Features --> CN3
+    Battery --> CN3
+    </div>
+</div>
+
+<div class="diagram-container" id="container-Drivers_Hierarchy">
+    <h2 class="diagram-title">7. Drivers in the Hierarchy</h2>
+    <div class="mermaid">
+graph LR
+    classDef internal fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff,stroke-width:2px;
+    classDef outcome fill:#a3c21b,stroke:#65a30d,color:#1e293b,stroke-width:2px;
+
+    subgraph Drivers [INTERNAL]
+    direction TB
+    Adv("Advertising"):::internal
+    Attr("Product Attributes & Price"):::internal
+    SF("Sales Force"):::internal
+    ProdV("Production Volume"):::internal
+    Cost("Cost"):::internal
+    end
+
+    subgraph Outcomes [ ]
+    direction TB
+    Aware[Brand Awareness]:::outcome
+    Consid[Consideration Set]:::outcome
+    Intent[Purchase Intention]:::outcome
+    Avail[Availability]:::outcome
+    Sales[Sales]:::outcome
+    Profit[Profits]:::outcome
+    end
+
+    Adv --> Aware
+    Adv -.-> Consid
+    Attr --> Consid
+    Attr -.-> Intent
+    SF --> Avail
+    ProdV --> Avail
+    Cost --> Profit
+
+    Aware --> Consid
+    Consid --> Intent
+    Intent --> Avail
+    Avail --> Sales
+    Sales --> Profit
+    </div>
+</div>
+
+
+
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+            fontFamily: '"Inter", sans-serif',
+            primaryColor: '#ffffff',
+            primaryTextColor: '#1e293b',
+            primaryBorderColor: '#94a3b8',
+            lineColor: '#64748b',
+            secondaryColor: '#f8fafc',
+            tertiaryColor: '#e2e8f0',
+            clusterBkg: '#f8fafc',
+            clusterBorder: '#cbd5e1',
+            fontSize: '15px'
+        },
+        flowchart: {
+            curve: 'basis',
+            nodeSpacing: 50,
+            rankSpacing: 50,
+            htmlLabels: true
+        }
+    });
+
+    await mermaid.run();
+
+    // Attach click-to-toggle after Mermaid renders
+    document.querySelectorAll('.node').forEach(node => {
+        node.style.cursor = 'pointer';
+        node.addEventListener('click', function () {
+            this.classList.toggle('selected');
+        });
+    });
+</script>
+
+</body>
+</html>
