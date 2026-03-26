@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brand Portfolio Assessment Tools</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>BCG Portfolio Hybrid Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -35,421 +35,598 @@
             padding: 40px;
             margin-bottom: 40px;
             width: 100%;
-            max-width: 900px;
+            max-width: 1200px;
+            box-sizing: border-box;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            align-items: start; /* Prevents columns from forcing equal height */
+        }
+
+        @media (max-width: 950px) {
+            .tool-container { grid-template-columns: 1fr; }
         }
 
         .tool-title {
             font-size: 1.25rem;
             font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 20px;
+            margin: 0 0 15px 0;
             color: #334155;
             border-bottom: 2px solid #f1f5f9;
             padding-bottom: 10px;
         }
 
-        /* --- FORM STYLING (TOOL 1) --- */
-        .assessment-form {
+        /* --- LEFT PANEL: BCG GRID & CONTROLS --- */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bcg-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            margin-top: 10px;
+            padding: 30px 20px 40px 40px; 
+            box-sizing: border-box;
+        }
+
+        .axis-label-y {
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-weight: 700;
+            font-size: 12px;
+            color: #64748b;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .axis-label-x {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 700;
+            font-size: 12px;
+            color: #64748b;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .marker-y-top { position: absolute; left: 10px; top: 30px; font-size: 10px; font-weight: 600; color: #94a3b8; }
+        .marker-y-mid { position: absolute; left: 10px; top: 50%; font-size: 10px; font-weight: 600; color: #94a3b8; transform: translateY(-50%); }
+        .marker-y-bot { position: absolute; left: 10px; bottom: 40px; font-size: 10px; font-weight: 600; color: #94a3b8; }
+        
+        .marker-x-left { position: absolute; bottom: 20px; left: 40px; font-size: 10px; font-weight: 600; color: #94a3b8; }
+        .marker-x-mid { position: absolute; bottom: 20px; left: 50%; font-size: 10px; font-weight: 600; color: #94a3b8; transform: translateX(-50%); padding-left: 20px; }
+        .marker-x-right { position: absolute; bottom: 20px; right: 20px; font-size: 10px; font-weight: 600; color: #94a3b8; }
+
+        .bcg-grid {
+            width: 100%;
+            height: 100%;
             display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            position: relative;
+            border: 2px solid #334155; 
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .bcg-grid::before {
+            content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px;
+            border-top: 2px dotted #cbd5e1; z-index: 1; pointer-events: none;
+        }
+        .bcg-grid::after {
+            content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px;
+            border-left: 2px dotted #cbd5e1; z-index: 1; pointer-events: none;
+        }
+
+        .quadrant {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 800; color: rgba(15, 23, 42, 0.04);
+            text-transform: uppercase; position: relative; z-index: 0;
+            text-align: center; padding: 20px; cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .quadrant:hover { background: #f8fafc; color: rgba(15, 23, 42, 0.08); }
+
+        /* Box Marker Styling */
+        .box-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background: #ffffff;
+            color: #0f172a;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 2px solid #64748b;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .box-marker:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            z-index: 20;
+        }
+
+        .box-marker.active {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a !important;
+            box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.15), 0 8px 15px rgba(0,0,0,0.2);
+            z-index: 30;
+        }
+
+        /* --- ADD/EDIT FORM (Moved to Left Panel) --- */
+        .add-form {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: background 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .add-form.edit-mode {
+            background: #f0f9ff;
+            border-color: #bae6fd;
+        }
+
+        .form-grid-top {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .form-grid-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+
+        .input-group input[type="text"], 
+        .input-group input[type="number"] {
+            padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+            font-family: 'Inter', sans-serif; font-size: 14px;
+        }
+
+        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .slider-val { font-size: 13px; font-weight: 700; color: #0ea5e9; background: #ffffff; border: 1px solid #bae6fd; padding: 2px 8px; border-radius: 4px; }
+
+        .slider { width: 100%; -webkit-appearance: none; height: 6px; border-radius: 3px; background: #cbd5e1; outline: none; }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
+            border-radius: 50%; background: #0f172a; cursor: pointer; transition: transform 0.1s;
+        }
+        .slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .btn-primary { background-color: #0f172a; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: 'Inter', sans-serif;}
+        .btn-primary:hover { background-color: #334155; }
+
+        .btn-secondary { background-color: #ffffff; color: #64748b; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;}
+        .btn-secondary:hover { background-color: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
+
+        .btn-danger { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;}
+        .btn-danger:hover { background-color: #fca5a5; color: #991b1b; border-color: #f87171; }
+
+        /* --- RIGHT PANEL: RESULT CARD --- */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
             gap: 24px;
         }
 
-        .form-section {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .financial-grid {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .calc-row {
-            display: contents;
-        }
-
-        .calc-row label {
-            font-weight: 500;
-            color: #475569;
-        }
-
-        .calc-row input {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            width: 150px;
-            text-align: right;
-        }
-
-        .calc-row input:focus {
-            outline: none;
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-        }
-
-        .total-row label, .total-row span {
-            font-weight: 700;
-            color: #0f172a;
-            font-size: 16px;
-        }
-
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 12px 24px;
-            align-items: center;
-            margin-top: 16px;
-        }
-
-        .grid-header {
-            font-weight: 600;
-            font-size: 12px;
-            color: #64748b;
-            text-transform: uppercase;
-            text-align: center;
-        }
-
-        .check-row {
-            display: contents;
-        }
-
-        .check-row label {
-            color: #334155;
-            font-size: 14px;
-        }
-
-        .check-row input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            justify-self: center;
-        }
-
-        .section-desc {
-            font-size: 14px;
-            color: #64748b;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
-
-        /* --- MERMAID STYLING (TOOL 2) --- */
-        .node {
-            cursor: pointer;
-        }
-        
-        .node rect, .node polygon, .node circle, .node ellipse {
-            stroke-width: 1.5px !important;
-            rx: 6px !important; 
-            ry: 6px !important;
-            transition: all 0.15s ease-in-out;
-        }
-
-        .node.selected rect, 
-        .node.selected polygon, 
-        .node.selected circle, 
-        .node.selected ellipse {
-            filter: brightness(0.85) saturate(1.5);
-            stroke: #0f172a !important; 
-            stroke-width: 3.5px !important;
-        }
-
-        .edgePath .path {
-            stroke: #64748b !important;
-            stroke-width: 2.5px !important;
-        }
-
-        .controls {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
+        .result-card {
+            border-radius: 12px;
+            padding: 32px;
             display: flex;
-            justify-content: flex-end;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            height: fit-content; /* Wrap to content height */
+        }
+
+        .theme-star { background: #fffbeb; border-color: #fde68a; }
+        .theme-star .r-title { color: #b45309; }
+        .theme-star .r-tag { background: #fef3c7; color: #92400e; }
+
+        .theme-question { background: #f5f3ff; border-color: #ddd6fe; }
+        .theme-question .r-title { color: #5b21b6; }
+        .theme-question .r-tag { background: #ede9fe; color: #4c1d95; }
+
+        .theme-cow { background: #f0fdf4; border-color: #bbf7d0; }
+        .theme-cow .r-title { color: #166534; }
+        .theme-cow .r-tag { background: #dcfce7; color: #15803d; }
+
+        .theme-dog { background: #fef2f2; border-color: #fecaca; }
+        .theme-dog .r-title { color: #991b1b; }
+        .theme-dog .r-tag { background: #fee2e2; color: #b91c1c; }
+
+        .theme-empty { background: #f8fafc; border-color: #e2e8f0; justify-content: center; align-items: center; text-align: center; color: #64748b;}
+
+        .r-tag { align-self: flex-start; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+        .r-title { font-size: 28px; font-weight: 800; margin: 0 0 8px 0; }
+        .r-subtitle { font-size: 15px; font-weight: 600; color: #475569; margin-bottom: 24px; }
+
+        .cash-flow-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
+            background: rgba(255,255,255,0.6);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
-        .btn-action {
-            background-color: #0ea5e9;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            display: inline-flex;
-            align-items: center;
+        .cf-metric span:first-child { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;}
+        .cf-metric span:last-child { font-size: 16px; font-weight: 800; color: #0f172a; }
+
+        .r-section { margin-bottom: 20px; }
+        .r-section h4 { margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #475569; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;}
+        .r-section p { margin: 0; font-size: 15px; color: #1e293b; line-height: 1.6; font-weight: 500; }
+
+        .r-narrative {
+            background: rgba(255,255,255,0.8);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid currentColor;
+            font-size: 14.5px;
+            color: #334155;
+            font-style: italic;
+            line-height: 1.5;
+            margin-bottom: 16px;
         }
 
-        .btn-action:hover {
-            background-color: #0284c7;
+        .r-caution {
+            background: #fff1f2; 
+            border: 1px solid #fecdd3;
+            padding: 16px;
+            border-radius: 8px;
         }
+        .r-caution h4 { margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #9f1239; }
+        .r-caution p { margin: 0; font-size: 14.5px; color: #881337; line-height: 1.5; font-weight: 500;}
 
-        .btn-reset {
-            background-color: #e2e8f0;
-            color: #475569;
-        }
-
-        .btn-reset:hover {
-            background-color: #cbd5e1;
-        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>Brand Portfolio Assessment</h1>
-        <p>Strategic Evaluation & Renewal Framework</p>
+        <h1>BCG Portfolio Hybrid Tool</h1>
+        <p>Live Interactive Pedagogy & Portfolio Plotting</p>
     </div>
 
     <div class="tool-container">
-        <h2 class="tool-title">1. Assessing Brand Contribution</h2>
         
-        <div class="assessment-form">
-            <div class="form-section">
-                <div class="section-desc">Financial Contribution Assessment</div>
-                <div class="financial-grid">
-                    <div class="calc-row">
-                        <label>Annual Revenues From Brand ($)</label>
-                        <input type="number" id="rev" placeholder="0" oninput="calculateContribution()">
-                    </div>
-                    <div class="calc-row">
-                        <label>Less Direct Marketing Spend ($)</label>
-                        <input type="number" id="dirSpend" placeholder="0" oninput="calculateContribution()">
-                    </div>
-                    <div class="calc-row">
-                        <label>Less Attributed Below-the-line Spend ($)</label>
-                        <input type="number" id="btlSpend" placeholder="0" oninput="calculateContribution()">
-                    </div>
-                    <div class="calc-row total-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
-                        <label>Apparent Brand Contribution:</label>
-                        <span id="totalContrib">$0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <div class="section-desc">Are there any hidden costs associated with this brand that mean the real contribution may be less?</div>
-                <div class="checkbox-grid">
-                    <div></div><div class="grid-header">YES</div><div class="grid-header">NO</div>
-                    
-                    <div class="check-row"><label>Senior management time sink</label><input type="radio" name="hc1" value="yes"><input type="radio" name="hc1" value="no" checked></div>
-                    <div class="check-row"><label>Extra attention from sales force</label><input type="radio" name="hc2" value="yes"><input type="radio" name="hc2" value="no" checked></div>
-                    <div class="check-row"><label>Overly complex product line</label><input type="radio" name="hc3" value="yes"><input type="radio" name="hc3" value="no" checked></div>
-                    <div class="check-row"><label>Customer/trade complaints</label><input type="radio" name="hc4" value="yes"><input type="radio" name="hc4" value="no" checked></div>
-                    <div class="check-row"><label>Bad public relations</label><input type="radio" name="hc5" value="yes"><input type="radio" name="hc5" value="no" checked></div>
-                    <div class="check-row"><label>Staff turnover</label><input type="radio" name="hc6" value="yes"><input type="radio" name="hc6" value="no" checked></div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <div class="section-desc">Does this brand contribute to the profitability of other brands in ways not captured by the P&L?</div>
-                <div class="checkbox-grid">
-                    <div></div><div class="grid-header">YES</div><div class="grid-header">NO</div>
-                    
-                    <div class="check-row"><label>Leverage with trade partners</label><input type="radio" name="hb1" value="yes"><input type="radio" name="hb1" value="no" checked></div>
-                    <div class="check-row"><label>Platform for line extensions and new products</label><input type="radio" name="hb2" value="yes"><input type="radio" name="hb2" value="no" checked></div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <div class="section-desc">How important is the contribution of this brand relative to other brands in the portfolio?</div>
-                <div class="checkbox-grid" style="grid-template-columns: 1fr auto auto auto;">
-                    <div></div><div class="grid-header">TOP 1/3</div><div class="grid-header">MID 1/3</div><div class="grid-header">BTM 1/3</div>
-                    
-                    <div class="check-row"><label>Contribution to profit</label><input type="radio" name="rc1"><input type="radio" name="rc1"><input type="radio" name="rc1"></div>
-                    <div class="check-row"><label>Contribution to overheads</label><input type="radio" name="rc2"><input type="radio" name="rc2"><input type="radio" name="rc2"></div>
-                </div>
-            </div>
-
-            <div class="form-section" style="background: #e0f2fe; border-color: #bae6fd;">
-                <div class="checkbox-grid" style="grid-template-columns: 1fr auto auto auto; margin-top: 0;">
-                    <div style="font-weight: 600; color: #0369a1;">Overall, how much does this brand contribute today?</div>
-                    <div class="grid-header" style="color:#0369a1;">HIGH</div><div class="grid-header" style="color:#0369a1;">MED</div><div class="grid-header" style="color:#0369a1;">LOW</div>
-                    <div class="check-row"><label></label><input type="radio" name="overall"><input type="radio" name="overall"><input type="radio" name="overall"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="btn-action btn-reset" onclick="resetForm()">Clear Assessment</button>
-            <button class="btn-action" onclick="window.print()">Print / Save PDF</button>
-        </div>
-    </div>
-
-    <div class="diagram-container" id="container-Renewal_Matrix">
-        <h2 class="diagram-title">2. The Brand Renewal Matrix (Decision Flow)</h2>
-        <div class="mermaid">
-graph LR
-    classDef start fill:#f1f5f9,stroke:#64748b,stroke-width:2px;
-    classDef metrics fill:#ffffff,stroke:#94a3b8,stroke-width:1px;
-    
-    %% Output Categories
-    classDef power fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
-    classDef sleeper fill:#fef08a,stroke:#eab308,stroke-width:2px;
-    classDef slider fill:#fecaca,stroke:#ef4444,stroke-width:2px;
-    classDef soldier fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
-    classDef watch fill:#f3e8ff,stroke:#a855f7,stroke-width:2px;
-    classDef wall fill:#ffedd5,stroke:#f97316,stroke-width:2px;
-    classDef discard fill:#cbd5e1,stroke:#475569,stroke-width:2px;
-
-    C{Contribution}:::start
-    T1{Traction}:::metrics
-    T2{Traction}:::metrics
-    T3{Traction}:::metrics
-    M1{Momentum}:::metrics
-    M2{Momentum}:::metrics
-    M3{Momentum}:::metrics
-    M4{Momentum}:::metrics
-    M5{Momentum}:::metrics
-    M6{Momentum}:::metrics
-
-    C -->|High| T1
-    C -->|Medium| T2
-    C -->|Low| T3
-
-    T1 -->|High| M1
-    T1 -->|Low| M2
-    T1 -->|Medium| M3
-
-    M1 -->|High| Power["Power Brand<br/>Defend ferociously.<br/>Hold line on pricing."]:::power
-    M2 -->|High| Sleeper["Sleeper<br/>Fast track. Consider selective<br/>promos to pull new users."]:::sleeper
-    M3 -->|Low| Slider["Slider<br/>Slowing rapidly. Act quickly<br/>to fix or sell."]:::slider
-
-    T2 -->|Medium| M4
-    M4 -->|Medium| Soldier["Soldier<br/>Solid performer. Cycle attention<br/>every 2-4 years."]:::soldier
-
-    T3 -->|Low| M5
-    T3 -->|High| M6
-
-    M5 -->|High| Watch["Rocket / Black Hole<br/>Put on watch list.<br/>Set clear milestones."]:::watch
-    M5 -->|Low| Discard["Discard<br/>Cluttering portfolio. Prune,<br/>sell, or mothball."]:::discard
-
-    M6 -->|Low| Wall["Wallflower<br/>Loyal niche. Limit investments,<br/>hold pricing firm."]:::wall
-        </div>
-        <div class="controls">
-            <button class="btn-action" onclick="downloadPNG('Renewal_Matrix')">Save Decision Tree as PNG</button>
-        </div>
-    </div>
-
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        
-        mermaid.initialize({ 
-            startOnLoad: true, 
-            theme: 'base',
-            themeVariables: {
-                fontFamily: '"Inter", sans-serif',
-                primaryColor: '#ffffff',
-                primaryTextColor: '#1e293b',
-                primaryBorderColor: '#94a3b8',
-                lineColor: '#64748b',
-                fontSize: '14px'
-            },
-            flowchart: {
-                curve: 'basis',
-                nodeSpacing: 40,
-                rankSpacing: 60,
-                htmlLabels: true
-            }
-        });
-
-        await mermaid.run();
-
-        // Node clicking for Diagram
-        document.querySelectorAll('.node').forEach(node => {
-            node.addEventListener('click', function() {
-                this.classList.toggle('selected');
-                const shapes = this.querySelectorAll('rect, polygon, circle, ellipse');
-                if(this.classList.contains('selected')) {
-                    shapes.forEach(shape => {
-                        shape.style.stroke = '#0f172a';
-                        shape.style.strokeWidth = '3.5px';
-                    });
-                } else {
-                    shapes.forEach(shape => {
-                        shape.style.stroke = '';
-                        shape.style.strokeWidth = '';
-                    });
-                }
-            });
-        });
-
-        // Form Calculator Logic
-        window.calculateContribution = function() {
-            const rev = parseFloat(document.getElementById('rev').value) || 0;
-            const dir = parseFloat(document.getElementById('dirSpend').value) || 0;
-            const btl = parseFloat(document.getElementById('btlSpend').value) || 0;
+        <div class="left-panel">
+            <h2 class="tool-title">Market Matrix</h2>
             
-            const total = rev - dir - btl;
-            
-            // Format as currency
-            const formatter = new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                maximumFractionDigits: 0
-            });
-            
-            document.getElementById('totalContrib').innerText = formatter.format(total);
-        };
-
-        window.resetForm = function() {
-            document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
-            document.querySelectorAll('input[value="no"]').forEach(radio => radio.checked = true);
-            
-            // Clear un-defaulted radios
-            const names = ['rc1', 'rc2', 'overall'];
-            names.forEach(name => {
-                const radios = document.getElementsByName(name);
-                radios.forEach(r => r.checked = false);
-            });
-            
-            calculateContribution();
-        };
-
-        // High-Res PNG Download for Mermaid
-        window.downloadPNG = function(name) {
-            const container = document.querySelector(`#container-${name}`);
-            const svgElement = container.querySelector('svg');
-            
-            const rect = svgElement.getBoundingClientRect();
-            const scale = 2; 
-            const canvas = document.createElement('canvas');
-            canvas.width = rect.width * scale;
-            canvas.height = rect.height * scale;
-            const ctx = canvas.getContext('2d');
-            ctx.scale(scale, scale); 
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, rect.width, rect.height);
-
-            const svgData = new XMLSerializer().serializeToString(svgElement);
-            const formattedSvg = svgData.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
-            
-            const blob = new Blob([formattedSvg], {type: 'image/svg+xml;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            
-            const img = new Image();
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, rect.width, rect.height);
-                URL.revokeObjectURL(url);
+            <div class="bcg-wrapper">
+                <div class="axis-label-y">Market Growth Rate</div>
+                <div class="axis-label-x">Relative Market Share (Log Scale)</div>
                 
-                const pngData = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.href = pngData;
-                link.download = `${name}.png`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
-            img.src = url;
+                <div class="marker-y-top">20%</div>
+                <div class="marker-y-mid">10%</div>
+                <div class="marker-y-bot">0%</div>
+                
+                <div class="marker-x-left">10.0x</div>
+                <div class="marker-x-mid">1.0x</div>
+                <div class="marker-x-right">0.1x</div>
+
+                <div class="bcg-grid" id="bcg-grid">
+                    <div class="quadrant" onclick="selectQuadrant('star')">Stars</div>
+                    <div class="quadrant" onclick="selectQuadrant('question')">Question<br/>Marks</div>
+                    <div class="quadrant" onclick="selectQuadrant('cow')">Cash Cows</div>
+                    <div class="quadrant" onclick="selectQuadrant('dog')">Dogs</div>
+                </div>
+            </div>
+
+            <div class="add-form" id="input-form">
+                <h2 class="tool-title" id="form-title" style="font-size: 1rem; margin-bottom: 16px; border-bottom: none; padding:0;">Plot New Product</h2>
+                
+                <div class="form-grid-top">
+                    <div class="input-group">
+                        <label>Product Label</label>
+                        <input type="text" id="f-label" placeholder="e.g. Brand X" maxlength="20" oninput="handleLiveInput()">
+                    </div>
+                </div>
+
+                <div class="form-grid-bottom">
+                    <div class="input-group">
+                        <div class="slider-header">
+                            <label style="margin:0;">Relative Share (Log Scale)</label>
+                            <span class="slider-val" id="f-share-val">1.0x</span>
+                        </div>
+                        <input type="range" id="f-share" class="slider" min="-1" max="1" step="0.01" value="0" oninput="handleLiveInput()">
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="slider-header">
+                            <label style="margin:0;">Market Growth Rate</label>
+                            <span class="slider-val" id="f-growth-val">10%</span>
+                        </div>
+                        <input type="range" id="f-growth" class="slider" min="0" max="20" step="1" value="10" oninput="handleLiveInput()">
+                    </div>
+                </div>
+
+                <div class="btn-group" id="mode-new">
+                    <button class="btn-primary" onclick="addProduct()">Drop New Pin</button>
+                    <button class="btn-secondary" onclick="clearPortfolio()">Clear Board</button>
+                </div>
+                
+                <div class="btn-group" id="mode-edit" style="display:none;">
+                    <button class="btn-primary" onclick="deselectProduct()">Done Editing</button>
+                    <button class="btn-danger" onclick="deleteSelected()">Delete Pin</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div id="result-card" class="result-card theme-empty">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const matrixContent = {
+            star: {
+                theme: 'theme-star', tag: 'Invest & Expand', title: 'Stars',
+                cfGen: 'High (Leader Scale)', cfUse: 'High (Funding Growth)',
+                strat: 'Invest heavily to defend market share. If share is maintained until the market matures, it will transition into a highly profitable Cash Cow.',
+                why: '<strong>The "Why":</strong> Stars hold a dominant market share in a rapidly growing market. Their scale generates substantial cash, but the high growth rate dictates heavy ongoing investment just to maintain that share against aggressive competitors. Net cash flow is generally neutral.',
+                cautions: 'Susceptible to fierce competition and price wars. If market growth decelerates rapidly and share is lost, they risk becoming Dogs rather than Cash Cows.'
+            },
+            question: {
+                theme: 'theme-question', tag: 'Build or Divest', title: 'Question Marks',
+                cfGen: 'Low (Low Scale)', cfUse: 'Very High (Chasing Growth)',
+                strat: 'Make a hard choice: either invest heavily to capture market share and push them into the "Star" quadrant, or divest before they bleed capital dry.',
+                why: '<strong>The "Why":</strong> These products are trying to compete in a highly attractive, growing market but lack the necessary scale to generate meaningful cash. Therefore, they are severe net cash drains (Problem Children) until they can achieve market leadership.',
+                cautions: '<strong>The Sunk Cost Trap:</strong> Extremely high risk of pouring endless capital into a product that never gains traction, resulting in a devastating cash drain with no strategic payoff.'
+            },
+            cow: {
+                theme: 'theme-cow', tag: 'Harvest / Milk', title: 'Cash Cows',
+                cfGen: 'Very High (Leader Scale)', cfUse: 'Low (Mature Market)',
+                strat: 'Milk them. Do not over-invest in growth. Use the excess cash generated here to fund your Question Marks and defend your Stars.',
+                why: '<strong>The "Why":</strong> With the market maturing and growth slowing, the need for heavy capital investment drops. Simultaneously, their dominant market share provides massive economies of scale, resulting in highly positive net cash generation.',
+                cautions: '<strong>Complacency:</strong> Severe under-investment can lead to premature obsolescence. Highly vulnerable to sudden technological disruptions or shifts in consumer behavior.'
+            },
+            dog: {
+                theme: 'theme-dog', tag: 'Liquidate / Divest', title: 'Dogs',
+                cfGen: 'Low (Low Scale)', cfUse: 'Low (Stagnant Market)',
+                strat: 'Divest, harvest, or liquidate. Unless they are providing a critical strategic synergy to another business unit, they should be removed.',
+                why: '<strong>The "Why":</strong> Operating in a stagnant market with weak market share means these products suffer from both low margins (no scale) and zero future potential. They are cash traps that tie up capital that could be deployed into higher-yielding opportunities.',
+                cautions: '<strong>Turnaround Delusions:</strong> Emotional attachment and management distraction. Holding onto a dying product usually destroys far more value than it saves.'
+            }
+        };
+
+        const colors = ['#0ea5e9', '#ef4444', '#22c55e', '#8b5cf6', '#f59e0b', '#ec4899'];
+        
+        let products = [];
+        let activeSelection = { type: 'quadrant', id: 'star' }; 
+
+        // Mapping Helpers
+        function calculateX(shareLogValue) { return 50 - (shareLogValue * 50); }
+        function calculateY(growth) { return 100 - (Math.max(0, Math.min(20, growth)) / 20 * 100); }
+
+        function getQuadrant(shareLogValue, growth) {
+            if (shareLogValue >= 0 && growth >= 10) return 'star';
+            if (shareLogValue < 0 && growth >= 10) return 'question';
+            if (shareLogValue >= 0 && growth < 10) return 'cow';
+            return 'dog';
+        }
+
+        // Live Binding Input Handler
+        function handleLiveInput() {
+            const labelInput = document.getElementById('f-label').value;
+            const shareLogVal = parseFloat(document.getElementById('f-share').value);
+            const growthVal = parseFloat(document.getElementById('f-growth').value);
+
+            // Update Readout UI
+            const displayShare = Math.pow(10, shareLogVal).toFixed(1);
+            document.getElementById('f-share-val').innerText = `${displayShare}x`;
+            document.getElementById('f-growth-val').innerText = `${growthVal}%`;
+
+            // If editing a product, update it live
+            if (activeSelection.type === 'product') {
+                const p = products.find(x => x.id === activeSelection.id);
+                if (p) {
+                    p.label = labelInput || 'Unnamed';
+                    p.share = shareLogVal;
+                    p.growth = growthVal;
+                    
+                    renderMatrix();
+                    updateResultCard();
+                }
+            }
+        }
+
+        function renderMatrix() {
+            const grid = document.getElementById('bcg-grid');
+            document.querySelectorAll('.box-marker').forEach(e => e.remove());
+
+            products.forEach(p => {
+                const xPos = calculateX(p.share);
+                const yPos = calculateY(p.growth);
+                const isActive = activeSelection.type === 'product' && activeSelection.id === p.id;
+
+                const box = document.createElement('div');
+                box.className = `box-marker ${isActive ? 'active' : ''}`;
+                box.style.left = `${xPos}%`;
+                box.style.top = `${yPos}%`;
+                
+                if (!isActive) {
+                    box.style.borderColor = p.color;
+                }
+
+                box.innerText = p.label;
+                
+                box.onclick = (e) => {
+                    e.stopPropagation();
+                    selectProduct(p.id);
+                };
+
+                grid.appendChild(box);
+            });
+        }
+
+        function updateResultCard() {
+            const card = document.getElementById('result-card');
+            
+            if (activeSelection.type === 'product') {
+                const p = products.find(x => x.id === activeSelection.id);
+                if(!p) return;
+
+                const quadKey = getQuadrant(p.share, p.growth);
+                const data = matrixContent[quadKey];
+                const displayShare = Math.pow(10, p.share).toFixed(1);
+                
+                card.className = `result-card ${data.theme}`;
+                card.innerHTML = `
+                    <div class="r-tag">${data.tag}</div>
+                    <h3 class="r-title">${p.label} <span style="font-weight:400; color:#94a3b8;">|</span> ${data.title}</h3>
+                    <div class="r-subtitle">Share: ${displayShare}x &nbsp;&bull;&nbsp; Growth: ${p.growth}%</div>
+                    
+                    <div class="cash-flow-box">
+                        <div class="cf-metric"><span>Cash Generation</span><span>${data.cfGen}</span></div>
+                        <div class="cf-metric"><span>Cash Consumption</span><span>${data.cfUse}</span></div>
+                    </div>
+
+                    <div class="r-section">
+                        <h4>Strategic Mandate</h4>
+                        <p>${data.strat}</p>
+                    </div>
+                    <div class="r-narrative">${data.why}</div>
+                    
+                    <div class="r-caution">
+                        <h4>⚠️ Cautions & Criticisms</h4>
+                        <p>${data.cautions}</p>
+                    </div>
+                `;
+            } 
+            else if (activeSelection.type === 'quadrant') {
+                const data = matrixContent[activeSelection.id];
+                
+                card.className = `result-card ${data.theme}`;
+                card.innerHTML = `
+                    <div class="r-tag">${data.tag}</div>
+                    <h3 class="r-title">${data.title}</h3>
+                    <div class="r-subtitle" style="visibility:hidden; margin-bottom: 24px;">Placeholder</div>
+                    
+                    <div class="cash-flow-box">
+                        <div class="cf-metric"><span>Cash Generation</span><span>${data.cfGen}</span></div>
+                        <div class="cf-metric"><span>Cash Consumption</span><span>${data.cfUse}</span></div>
+                    </div>
+
+                    <div class="r-section">
+                        <h4>Strategic Mandate</h4>
+                        <p>${data.strat}</p>
+                    </div>
+                    <div class="r-narrative">${data.why}</div>
+
+                    <div class="r-caution">
+                        <h4>⚠️ Cautions & Criticisms</h4>
+                        <p>${data.cautions}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function selectProduct(id) {
+            activeSelection = { type: 'product', id: id };
+            const p = products.find(x => x.id === id);
+            
+            if (p) {
+                // Populate Form
+                document.getElementById('f-label').value = p.label;
+                document.getElementById('f-share').value = p.share;
+                document.getElementById('f-growth').value = p.growth;
+                
+                const displayShare = Math.pow(10, p.share).toFixed(1);
+                document.getElementById('f-share-val').innerText = `${displayShare}x`;
+                document.getElementById('f-growth-val').innerText = `${p.growth}%`;
+
+                // Toggle UI Modes
+                document.getElementById('mode-new').style.display = 'none';
+                document.getElementById('mode-edit').style.display = 'grid';
+                document.getElementById('form-title').innerText = 'Editing Selection';
+                document.getElementById('input-form').classList.add('edit-mode');
+            }
+
+            renderMatrix(); 
+            updateResultCard();
+        }
+
+        function selectQuadrant(quadKey) {
+            activeSelection = { type: 'quadrant', id: quadKey };
+            
+            // Reset Form Values for Next Drop
+            document.getElementById('f-label').value = '';
+            document.getElementById('f-share').value = 0; // 1.0x
+            document.getElementById('f-growth').value = 10;
+            document.getElementById('f-share-val').innerText = '1.0x';
+            document.getElementById('f-growth-val').innerText = '10%';
+
+            // Toggle UI Modes
+            document.getElementById('mode-new').style.display = 'grid';
+            document.getElementById('mode-edit').style.display = 'none';
+            document.getElementById('form-title').innerText = 'Plot New Product';
+            document.getElementById('input-form').classList.remove('edit-mode');
+
+            renderMatrix(); 
+            updateResultCard();
+        }
+
+        function addProduct() {
+            const label = document.getElementById('f-label').value || `Brand ${products.length + 1}`;
+            const shareLogValue = parseFloat(document.getElementById('f-share').value) || 0; 
+            const growth = parseFloat(document.getElementById('f-growth').value) || 10;
+            
+            const newId = Date.now();
+            const color = colors[products.length % colors.length];
+
+            products.push({ id: newId, label, share: shareLogValue, growth, color });
+            selectProduct(newId);
+        }
+
+        function deselectProduct() {
+            selectQuadrant('star');
+        }
+
+        function deleteSelected() {
+            if (activeSelection.type === 'product') {
+                products = products.filter(x => x.id !== activeSelection.id);
+                deselectProduct();
+            }
+        }
+
+        function clearPortfolio() {
+            products = [];
+            deselectProduct();
+        }
+
+        // Init
+        window.onload = () => {
+            selectQuadrant('star'); 
         };
     </script>
 </body>
