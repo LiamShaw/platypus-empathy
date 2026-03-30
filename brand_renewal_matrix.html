@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Brand Portfolio Evaluator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }
+        .header p { color: #475569; font-size: 1.1rem; margin: 0; }
+
+        .tool-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 1050px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            box-sizing: border-box;
+        }
+
+        /* --- FRAMEWORK SWITCHER --- */
+        .framework-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        .framework-tab {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+        }
+
+        .framework-tab:hover { background: #f1f5f9; color: #0f172a; }
+        .framework-tab.active { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+
+        .matrix-ui {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 800px) { .matrix-ui { grid-template-columns: 1fr; } }
+
+        /* --- LEFT PANEL --- */
+        .controls-panel { display: flex; flex-direction: column; gap: 20px; }
+
+        .framework-desc {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .section-heading {
+            font-size: 13px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #64748b; border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px; margin-bottom: 4px;
+        }
+
+        /* Hill Sliders */
+        .control-group { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .control-label { font-weight: 600; color: #1e293b; margin-bottom: 4px; display: block; font-size: 15px; }
+        .control-sub { font-size: 12px; color: #64748b; margin-bottom: 12px; display: block; }
+        .segmented-control { display: flex; background: #e2e8f0; border-radius: 6px; padding: 3px; gap: 2px; }
+        .segment-btn {
+            flex: 1; text-align: center; padding: 8px 0; font-size: 13px; font-weight: 600;
+            color: #475569; cursor: pointer; border-radius: 4px; transition: all 0.2s;
+        }
+        .segment-btn.active { background: #ffffff; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* Scenario Grid (Used by all frameworks) */
+        .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        
+        .scenario-pill {
+            padding: 12px 10px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center;
+            font-size: 13px; color: #475569; cursor: pointer; background: #f8fafc; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;
+        }
+        .scenario-pill:hover { border-color: #94a3b8; background: #f1f5f9; }
+        
+        .scenario-pill.active {
+            background: #0f172a; color: #ffffff; border-color: #0f172a;
+            font-weight: 600; box-shadow: 0 4px 6px rgba(15, 23, 42, 0.15); transform: scale(1.02);
+        }
+
+        .scenario-pill.active-hybrid {
+            background: #ffffff; color: #0f172a; border: 2px dashed #94a3b8;
+            font-weight: 600; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); transform: scale(1.02);
+        }
+
+        /* --- RIGHT PANEL: RESULT CARD --- */
+        .result-card {
+            border-radius: 10px; padding: 32px; display: flex; flex-direction: column;
+            justify-content: flex-start; transition: all 0.3s ease; height: 100%;
+            box-sizing: border-box; border: 2px solid transparent;
+        }
+
+        .theme-green { background: #f0fdf4; border-color: #bbf7d0; }
+        .theme-green .r-title { color: #166534; }
+        .theme-green .r-tag { background: #dcfce7; color: #15803d; }
+
+        .theme-yellow { background: #fefce8; border-color: #fef08a; }
+        .theme-yellow .r-title { color: #854d0e; }
+        .theme-yellow .r-tag { background: #fef9c3; color: #a16207; }
+
+        .theme-red { background: #fef2f2; border-color: #fecaca; }
+        .theme-red .r-title { color: #991b1b; }
+        .theme-red .r-tag { background: #fee2e2; color: #b91c1c; }
+
+        .theme-purple { background: #f5f3ff; border-color: #ddd6fe; }
+        .theme-purple .r-title { color: #5b21b6; }
+        .theme-purple .r-tag { background: #ede9fe; color: #4c1d95; }
+
+        .theme-hybrid { background: #f8fafc; border-color: #94a3b8; border-style: dashed; }
+        .theme-hybrid .r-title { color: #334155; }
+        .theme-hybrid .r-tag { background: #e2e8f0; color: #475569; }
+
+        .theme-empty { background: #f8fafc; border-color: #e2e8f0; justify-content: center; align-items: center; text-align: center; color: #64748b;}
+
+        .r-tag {
+            align-self: flex-start; padding: 6px 12px; border-radius: 20px; font-size: 11px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;
+        }
+
+        .r-title { font-size: 28px; font-weight: 800; margin: 0 0 16px 0; line-height: 1.2; }
+        .r-desc { font-size: 15px; color: #334155; line-height: 1.6; margin-bottom: 24px; font-weight: 500; }
+
+        .r-theory {
+            background: rgba(255,255,255,0.7); padding: 16px; border-radius: 8px; font-size: 14px;
+            color: #1e293b; margin-bottom: 20px; border-left: 4px solid currentColor; line-height: 1.5;
+        }
+        .r-theory strong { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; opacity: 0.8; }
+
+        .r-caution {
+            background: #fff1f2; border: 1px solid #fecdd3; padding: 16px; border-radius: 8px; margin-top: auto; 
+        }
+        .r-caution h4 { margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #9f1239; }
+        .r-caution p { margin: 0; font-size: 14px; color: #881337; line-height: 1.5; font-weight: 500;}
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Strategic Portfolio Evaluator</h1>
+        <p>Explore Brand Scenarios Across Major Academic Frameworks</p>
+    </div>
+
+    <div class="tool-container">
+        
+        <div class="framework-tabs">
+            <div class="framework-tab active" id="tab-hill" onclick="switchFramework('hill')">Hill et al. (Renewal Matrix)</div>
+            <div class="framework-tab" id="tab-aaker" onclick="switchFramework('aaker')">David Aaker (Architecture)</div>
+            <div class="framework-tab" id="tab-keller" onclick="switchFramework('keller')">Kevin Lane Keller (Roles)</div>
+        </div>
+
+        <div class="matrix-ui">
+            
+            <div class="controls-panel">
+                
+                <div id="framework-description" class="framework-desc"></div>
+
+                <div id="hill-sliders" style="display: none;">
+                    <div class="section-heading">Evaluation Metrics</div>
+                    <div class="control-group" style="margin-bottom: 10px;">
+                        <span class="control-label">Contribution</span>
+                        <div class="segmented-control" id="ctrl-c">
+                            <div class="segment-btn active" data-val="high">High</div>
+                            <div class="segment-btn" data-val="medium">Medium</div>
+                            <div class="segment-btn" data-val="low">Low</div>
+                        </div>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 10px;">
+                        <span class="control-label">Traction</span>
+                        <div class="segmented-control" id="ctrl-t">
+                            <div class="segment-btn active" data-val="high">High</div>
+                            <div class="segment-btn" data-val="medium">Medium</div>
+                            <div class="segment-btn" data-val="low">Low</div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <span class="control-label">Momentum</span>
+                        <div class="segmented-control" id="ctrl-m">
+                            <div class="segment-btn active" data-val="high">High</div>
+                            <div class="segment-btn" data-val="medium">Medium</div>
+                            <div class="segment-btn" data-val="low">Low</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-heading" style="margin-top: 10px;">Select Scenario</div>
+                <div class="scenario-grid" id="scenario-grid">
+                    </div>
+
+            </div>
+
+            <div id="result-card" class="result-card theme-empty">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATABASE ---
+        
+        // 1. Hill, Ettenson & Tyson (Renewal Matrix)
+        const hillData = {
+            "high-high-high": { id: "power", title: "Power Brand", tag: "Invest & Grow", theme: "theme-green",
+                desc: "Well done. This is a real power brand. Do extend the brand carefully, hold the line on pricing, and defend ferociously.",
+                theory: "Power Brands dictate the overall perception of the corporate portfolio and possess high price inelasticity, driving core enterprise valuation.",
+                cautions: "Don't give in to the temptation to divert resources from this brand to fund weaker sisters in the portfolio." },
+            "high-high-low": { id: "sleeper", title: "Sleeper", tag: "Fast Track", theme: "theme-yellow",
+                desc: "Fast track. This is a sleeper, but with a little push it could reach power brand status. Take a close look at pricing to see if selective promos could pull in new users.",
+                theory: "Sleepers often possess high 'latent equity' or nostalgic value. Leverage retro-branding or align them with macro-trends to reactivate them.",
+                cautions: "Without marketing intervention, a Sleeper's lack of momentum will eventually drag down its traction, turning it into a Slider." },
+            "high-medium-low": { id: "slider", title: "Slider", tag: "Intervene Rapidly", theme: "theme-red",
+                desc: "This is a solid brand slowing rapidly. Once forward momentum ceases, decline can accelerate precipitously. Act quickly to fix or sell.",
+                theory: "Sliders suffer from 'Brand Fatigue.' If not intervened, they enter a death spiral where aggressive discounting erodes equity further.",
+                cautions: "The temptation is to 'wait and see' what happens. This is a fatal mistake; turnaround requires immediate, dramatic operational changes." },
+            "medium-medium-medium": { id: "soldier", title: "Soldier", tag: "Maintain", theme: "theme-green",
+                desc: "A solid performer. 60% to 80% of most portfolios are solid brands. Cycle attention across them, giving a resource boost every two to four years.",
+                theory: "Soldiers provide the baseline volume required to maintain supply chain and distribution leverage for the parent company.",
+                cautions: "Soldiers suffer from the 'familiarity trap'—management takes them for granted, allowing agile disruptors to steal market share incrementally." },
+            "low-low-high": { id: "watch", title: "Watch List (Rocket)", tag: "Monitor", theme: "theme-purple",
+                desc: "It's either a power brand of tomorrow or a black hole of investment. Brands take time to build, so set clear milestones and monitor progress.",
+                theory: "Operates on a Venture Capital risk model. Innovation theory mandates 'stage-gate' funding tied strictly to validated customer acquisition.",
+                cautions: "The Sunk Cost Trap: Do not pour endless capital into a product that continually misses its milestones." },
+            "low-high-low": { id: "wallflower", title: "Wallflower", tag: "Niche", theme: "theme-yellow",
+                desc: "A small brand with a highly devoted set of customers. Make sure it's priced so your CFO can love it, too.",
+                theory: "These brands benefit from 'Niche inelasticity.' Price increases are often absorbed with little churn, making them hidden profit drivers.",
+                cautions: "Do not attempt to push a Wallflower into the mass market; you will alienate the core cult following and destroy the brand's unique appeal." },
+            "low-low-low": { id: "discard", title: "Discard", tag: "Prune", theme: "theme-red",
+                desc: "Time to prune this brand by selling or mothballing it. It is causing clutter and soaking up management attention.",
+                theory: "Holding onto these violates 'Mental Availability.' Eliminating them frees up cognitive bandwidth for the sales team and actual retail shelf space.",
+                cautions: "Emotional Attachment: Management often holds onto dying products out of nostalgia, destroying far more value than they save." }
+        };
+
+        // 2. David Aaker (Brand Architecture)
+        const aakerData = {
+            "strategic": { id: "strategic", title: "Strategic Brand", tag: "Future Core", theme: "theme-green",
+                desc: "A brand that is projected to generate significant future sales and profits. It may currently be a small player, but it represents the future direction of the enterprise.",
+                theory: "These brands are the cornerstone of future enterprise valuation. They must be aggressively funded to ensure they achieve market dominance before competitors.",
+                cautions: "Risk of Underfunding: Because they may not currently generate high profits, short-sighted management often starves them of the resources needed to reach critical mass." },
+            "linchpin": { id: "linchpin", title: "Linchpin Brand", tag: "Ecosystem Driver", theme: "theme-purple",
+                desc: "A brand that indirectly influences the portfolio by holding it together. It often doesn't drive direct sales, but rather drives loyalty or controls a key future vision.",
+                theory: "Linchpins (like Hilton Honors or Amazon Prime) act as the 'glue' for the corporate ecosystem, locking customers into a multi-product relationship and increasing switching costs.",
+                cautions: "If a Linchpin brand fails or loses relevance, the entire portfolio suffers increased customer churn, as the connective tissue holding the ecosystem together dissolves." },
+            "silverbullet": { id: "silverbullet", title: "Silver Bullet", tag: "Halo Effect", theme: "theme-yellow",
+                desc: "A sub-brand or product whose primary strategic job is to positively influence the image of the master brand or another brand in the portfolio.",
+                theory: "Silver Bullets (like the Mazda Miata) are deployed to alter consumer perception—proving that a parent brand is innovative, high-quality, or stylish.",
+                cautions: "Do not evaluate Silver Bullets solely on their individual P&L. Their true ROI is measured by the brand equity and 'halo' they lend to the rest of the portfolio." },
+            "cashcow": { id: "cashcow", title: "Cash Cow Brand", tag: "Capital Engine", theme: "theme-green",
+                desc: "A mature brand that continues to generate significant cash flow. Its primary role is to fund the future growth of Strategic Brands and Silver Bullets.",
+                theory: "Operating in mature or declining markets, Cash Cows enjoy massive economies of scale and brand awareness, requiring almost zero top-of-funnel marketing spend.",
+                cautions: "Complacency Trap: While marketing spend should be minimized, milking them too aggressively by cutting product quality will cause premature collapse." }
+        };
+
+        // 3. Kevin Lane Keller (Portfolio Roles)
+        const kellerData = {
+            "flanker": { id: "flanker", title: "Flanker (Fighter) Brand", tag: "Defender", theme: "theme-red",
+                desc: "A brand launched specifically to combat low-price competitors, ensuring that the company's premium flagship brand does not have to engage in price wars.",
+                theory: "Flankers act as a protective moat. By offering a cheaper alternative, the company retains price-sensitive customers without diluting the prestige of their core brand.",
+                cautions: "Cannibalization: The Flanker must be strictly positioned so it steals sales from competitors, not from your own premium flagship brand. It cannot be 'too good'." },
+            "cashcow": { id: "cashcow", title: "Cash Cow Brand", tag: "Milker", theme: "theme-green",
+                desc: "A brand kept around despite dwindling sales because it manages to hold onto enough customers to remain highly profitable with virtually no marketing support.",
+                theory: "Keller emphasizes that removing these brands would leave money on the table. They capitalize on pure habit and legacy distribution.",
+                cautions: "Do not attempt to 'revive' them with expensive marketing campaigns. Let them naturally decline while extracting maximum profit." },
+            "lowend": { id: "lowend", title: "Low-End Entry Brand", tag: "Acquisition", theme: "theme-yellow",
+                desc: "A relatively low-priced offering designed solely to hook first-time buyers into the brand franchise.",
+                theory: "The strategic objective is the 'Customer Journey.' Once acquired via the entry brand, the company uses CRM and loyalty tactics to trade them up to higher-margin brands over time.",
+                cautions: "If the Entry-Level brand offers a poor user experience, the customer will abandon the ecosystem entirely rather than trading up." },
+            "highend": { id: "highend", title: "High-End Prestige Brand", tag: "Aspirational", theme: "theme-purple",
+                desc: "A highly priced tier designed to cast a glow of premium quality and prestige over the rest of the company's lower-tier offerings.",
+                theory: "Prestige brands leverage the psychological 'Anchoring Effect.' Their mere presence makes the mid-tier products look like reasonable, high-quality bargains.",
+                cautions: "If the Prestige brand is discounted or distributed in mass-market channels, its aspirational value evaporates, destroying the halo effect." }
+        };
+
+        // --- APP STATE ---
+        let currentFramework = 'hill'; // 'hill', 'aaker', 'keller'
+        let hillState = { c: 'high', t: 'high', m: 'high' };
+        
+        // --- UI RENDERERS ---
+
+        function switchFramework(framework) {
+            currentFramework = framework;
+            
+            // Update Tabs
+            document.querySelectorAll('.framework-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${framework}`).classList.add('active');
+
+            // Update UI Panels
+            const descEl = document.getElementById('framework-description');
+            const slidersEl = document.getElementById('hill-sliders');
+            const gridEl = document.getElementById('scenario-grid');
+
+            gridEl.innerHTML = ''; // Clear pills
+
+            if (framework === 'hill') {
+                descEl.innerText = "The Brand Renewal Matrix focuses on resource allocation by evaluating a brand's current Contribution, Traction, and future Momentum.";
+                slidersEl.style.display = 'block';
+                
+                // Build Hill Pills
+                const hillOrder = ['power', 'sleeper', 'slider', 'soldier', 'watch', 'wallflower', 'discard'];
+                hillOrder.forEach(id => {
+                    const data = Object.values(hillData).find(d => d.id === id);
+                    const pill = document.createElement('div');
+                    pill.className = 'scenario-pill';
+                    pill.id = `pill-${id}`;
+                    pill.innerText = data.title;
+                    // Reverse lookup the key to snap sliders
+                    const key = Object.keys(hillData).find(k => hillData[k].id === id);
+                    pill.onclick = () => snapHill(key);
+                    gridEl.appendChild(pill);
+                });
+                
+                // Add Hybrid
+                const hybrid = document.createElement('div');
+                hybrid.className = 'scenario-pill';
+                hybrid.id = 'pill-hybrid';
+                hybrid.innerText = 'Uncharted';
+                hybrid.style.pointerEvents = 'none';
+                gridEl.appendChild(hybrid);
+
+                renderHill(); // Renders slider state and card
+            } 
+            else if (framework === 'aaker') {
+                descEl.innerText = "David Aaker's Brand Architecture evaluates brands based on the strategic 'jobs' they perform to support the parent company's ecosystem and future valuation.";
+                slidersEl.style.display = 'none';
+                
+                // Build Aaker Pills
+                Object.keys(aakerData).forEach(key => {
+                    const data = aakerData[key];
+                    const pill = document.createElement('div');
+                    pill.className = 'scenario-pill';
+                    pill.id = `pill-${key}`;
+                    pill.innerText = data.title;
+                    pill.onclick = () => renderStaticCard('aaker', key);
+                    gridEl.appendChild(pill);
+                });
+
+                renderStaticCard('aaker', 'strategic'); // Default
+            }
+            else if (framework === 'keller') {
+                descEl.innerText = "Kevin Lane Keller's Portfolio Roles focus on maximizing total market coverage, acquiring customers, and protecting flagship assets from cheap competitors.";
+                slidersEl.style.display = 'none';
+                
+                // Build Keller Pills
+                Object.keys(kellerData).forEach(key => {
+                    const data = kellerData[key];
+                    const pill = document.createElement('div');
+                    pill.className = 'scenario-pill';
+                    pill.id = `pill-${key}`;
+                    pill.innerText = data.title;
+                    pill.onclick = () => renderStaticCard('keller', key);
+                    gridEl.appendChild(pill);
+                });
+
+                renderStaticCard('keller', 'flanker'); // Default
+            }
+        }
+
+        // Hill Logic (Dynamic with Sliders)
+        function renderHill() {
+            // Update Segmented Buttons
+            ['c', 't', 'm'].forEach(cat => {
+                const container = document.getElementById(`ctrl-${cat}`);
+                const buttons = container.querySelectorAll('.segment-btn');
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('data-val') === hillState[cat]) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+            });
+
+            const key = `${hillState.c}-${hillState.t}-${hillState.m}`;
+            const data = hillData[key];
+            const card = document.getElementById('result-card');
+
+            // Reset Pills
+            document.querySelectorAll('.scenario-pill').forEach(p => p.classList.remove('active', 'active-hybrid'));
+            card.className = 'result-card'; // clear themes
+
+            if (data) {
+                document.getElementById(`pill-${data.id}`).classList.add('active');
+                card.classList.add(data.theme);
+                card.innerHTML = buildCardHTML(data);
+            } else {
+                document.getElementById('pill-hybrid').classList.add('active-hybrid');
+                card.classList.add('theme-hybrid');
+                card.innerHTML = `
+                    <div class="r-tag">Hybrid State</div>
+                    <h3 class="r-title">Uncharted Combination</h3>
+                    <div class="r-desc">This specific combination falls outside the classic textbook archetypes. You are receiving conflicting market signals.</div>
+                    <div class="r-theory"><strong>Action Required:</strong> Evaluate the strongest pulling factor. For example, if Momentum is tanking but Contribution is still high, lean toward the <em>Slider</em> logic rather than assuming it is a <em>Soldier</em>.</div>
+                `;
+            }
+        }
+
+        function snapHill(key) {
+            const parts = key.split('-');
+            hillState.c = parts[0]; hillState.t = parts[1]; hillState.m = parts[2];
+            renderHill();
+        }
+
+        // Slider Event Listeners
+        ['c', 't', 'm'].forEach(cat => {
+            const container = document.getElementById(`ctrl-${cat}`);
+            const buttons = container.querySelectorAll('.segment-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    hillState[cat] = this.getAttribute('data-val');
+                    renderHill();
+                });
+            });
+        });
+
+        // Static Logic (Aaker / Keller)
+        function renderStaticCard(framework, key) {
+            // Highlight Pill
+            document.querySelectorAll('.scenario-pill').forEach(p => p.classList.remove('active'));
+            document.getElementById(`pill-${key}`).classList.add('active');
+
+            const data = framework === 'aaker' ? aakerData[key] : kellerData[key];
+            const card = document.getElementById('result-card');
+            
+            card.className = `result-card ${data.theme}`;
+            card.innerHTML = buildCardHTML(data);
+        }
+
+        // Shared Card Builder
+        function buildCardHTML(data) {
+            return `
+                <div class="r-tag">${data.tag}</div>
+                <h3 class="r-title">${data.title}</h3>
+                <div class="r-desc">${data.desc}</div>
+                <div class="r-theory">
+                    <strong>Strategic Theory</strong>
+                    <span>${data.theory}</span>
+                </div>
+                <div class="r-caution">
+                    <h4>⚠️ Key Vulnerability</h4>
+                    <p>${data.cautions}</p>
+                </div>
+            `;
+        }
+
+        // Init
+        window.onload = () => switchFramework('hill');
+
+    </script>
+</body>
+</html>
