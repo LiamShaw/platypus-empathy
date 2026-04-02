@@ -45,6 +45,8 @@
         margin-top: 8px;
         outline: none;
         transition: border-color 0.2s ease;
+        /* Firefox specific fix for number input arrows */
+        -moz-appearance: textfield;
       }
       select:focus,
       input[type="number"]:focus {
@@ -77,12 +79,17 @@
         font-size: 0.95rem;
         font-family: monospace;
       }
-      /* Custom range slider styling */
+
+      /* --- SLIDER STYLING (Cross-Browser) --- */
       input[type="range"] {
         -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
         width: 100%;
         background: transparent;
       }
+
+      /* WebKit (Chrome, Safari, Edge) */
       input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
         height: 20px;
@@ -94,6 +101,24 @@
         box-shadow: 0 0 10px rgba(137, 180, 250, 0.5);
       }
       input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 6px;
+        cursor: pointer;
+        background: #45475a;
+        border-radius: 4px;
+      }
+
+      /* Mozilla (Firefox) Fixes */
+      input[type="range"]::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: #89b4fa;
+        cursor: pointer;
+        border: none; /* Firefox adds a default border */
+        box-shadow: 0 0 10px rgba(137, 180, 250, 0.5);
+      }
+      input[type="range"]::-moz-range-track {
         width: 100%;
         height: 6px;
         cursor: pointer;
@@ -216,13 +241,13 @@
         // Error handling for out-of-bounds inputs
         if (isNaN(semanticVal) || semanticVal < 1 || semanticVal > 7) {
           document.getElementById("integerResult").textContent = "ERR";
-          document.getElementById("integerResult").style.color = "#f38ba8"; // Red error color
+          document.getElementById("integerResult").style.color = "#f38ba8";
           document.getElementById("exactResult").textContent =
             "Value must be between 1.0 and 7.0";
           return;
         }
 
-        document.getElementById("integerResult").style.color = "#a6e3a1"; // Reset to green
+        document.getElementById("integerResult").style.color = "#a6e3a1";
 
         const limits = data[market][charKey];
         const physicalRange = limits.max - limits.min;
