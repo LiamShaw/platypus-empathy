@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sonite Percentile Conjoint Interpolator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: #1e1e2e;
+        color: #cdd6f4;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        padding: 40px 20px;
+        display: flex;
+        justify-content: center;
+      }
+      .card {
+        background-color: #313244;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        width: 100%;
+        max-width: 700px;
+      }
+      select,
+      input[type="range"] {
+        background-color: #181825;
+        color: #cdd6f4;
+        border: 1px solid #45475a;
+        border-radius: 8px;
+        padding: 12px;
+        width: 100%;
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+      select:focus {
+        border-color: #a6e3a1;
+      }
+      label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #bac2de;
+      }
+      .score-box {
+        background-color: #181825;
+        border: 1px solid #45475a;
+        border-radius: 8px;
+        padding: 24px;
+        text-align: center;
+      }
+      .utility-result {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #a6e3a1;
+        line-height: 1;
+        margin: 10px 0;
+      }
+      .raw-result {
+        color: #89b4fa;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      canvas {
+        width: 100%;
+        height: 300px;
+        margin-top: 20px;
+        background: #1e1e2e;
+        border-radius: 8px;
+        border: 1px solid #45475a;
+      }
+
+      /* Cross-browser Slider Styling */
+      input[type="range"] {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background: transparent;
+        margin-top: 10px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: #a6e3a1;
+        cursor: pointer;
+        margin-top: -8px;
+        box-shadow: 0 0 10px rgba(166, 227, 161, 0.5);
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 6px;
+        cursor: pointer;
+        background: #45475a;
+        border-radius: 4px;
+      }
+      input[type="range"]::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: #a6e3a1;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 0 10px rgba(166, 227, 161, 0.5);
+      }
+      input[type="range"]::-moz-range-track {
+        width: 100%;
+        height: 6px;
+        cursor: pointer;
+        background: #45475a;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2
+        class="text-2xl font-bold mb-6 text-center tracking-wide"
+        style="color: #a6e3a1"
+      >
+        Sonite Percentile Visualizer
+      </h2>
+
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <label for="segment">Target Segment</label>
+          <select id="segment" onchange="draw()"></select>
+        </div>
+        <div>
+          <label for="characteristic">Characteristic</label>
+          <select id="characteristic" onchange="draw()"></select>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="flex justify-between text-sm text-[#bac2de] font-bold">
+          <span>0% (Lowest Spec)</span>
+          <span id="sliderValLabel" style="color: #a6e3a1; font-size: 1.1rem"
+            >50%</span
+          >
+          <span>100% (Highest Spec)</span>
+        </div>
+        <input
+          type="range"
+          id="percentileSlider"
+          min="0"
+          max="100"
+          value="50"
+          oninput="draw()"
+          step="1"
+        />
+      </div>
+
+      <div class="score-box mb-6">
+        <div class="text-xs text-[#a6adc8] uppercase tracking-widest font-bold">
+          Interpolated Utility Score
+        </div>
+        <div id="utilityResult" class="utility-result">0.00</div>
+        <div class="mt-2 text-sm text-[#bac2de]">
+          Translates to Raw Attribute Level:
+          <span id="rawTarget" class="raw-result">--</span>
+        </div>
+      </div>
+
+      <canvas id="chartCanvas" width="800" height="400"></canvas>
+    </div>
+
+    <script>
+      const data = {
+        Explorers: {
+          Design: [
+            [6, 0.27],
+            [7, 0.4],
+            [8, 0.4],
+            [9, 0.39],
+          ],
+          Display: [
+            [22, 0.24],
+            [28, 0.34],
+            [34, 0.41],
+            [40, 0.46],
+          ],
+          Power: [
+            [52, 0.01],
+            [68, 0.24],
+            [84, 0.53],
+            [100, 0.65],
+          ],
+          Price: [
+            [268, 0.0],
+            [348, 1.0],
+            [428, 0.36],
+            [508, 0.08],
+          ],
+        },
+        Shoppers: {
+          Design: [
+            [7, 0.24],
+            [8, 0.37],
+            [9, 0.37],
+            [10, 0.37],
+          ],
+          Display: [
+            [20, 0.35],
+            [26, 0.35],
+            [32, 0.34],
+            [38, 0.32],
+          ],
+          Power: [
+            [43, 0.21],
+            [59, 0.51],
+            [75, 0.44],
+            [91, 0.2],
+          ],
+          Price: [
+            [207, 0.14],
+            [287, 1.0],
+            [367, 0.22],
+            [447, 0.0],
+          ],
+        },
+        Professionals: {
+          Design: [
+            [7, 0.25],
+            [8, 0.4],
+            [9, 0.42],
+            [10, 0.42],
+          ],
+          Display: [
+            [12, 0.36],
+            [18, 0.38],
+            [24, 0.38],
+            [30, 0.36],
+          ],
+          Power: [
+            [27, 0.25],
+            [43, 0.51],
+            [59, 0.5],
+            [75, 0.22],
+          ],
+          Price: [
+            [229, 0.09],
+            [309, 1.0],
+            [389, 0.39],
+            [469, 0.0],
+          ],
+        },
+        "High Earners": {
+          Design: [
+            [7, 0.18],
+            [8, 0.45],
+            [9, 0.73],
+            [10, 0.75],
+          ],
+          Display: [
+            [22, 0.49],
+            [28, 0.54],
+            [34, 0.55],
+            [40, 0.52],
+          ],
+          Power: [
+            [52, 0.08],
+            [68, 0.42],
+            [84, 0.95],
+            [100, 0.65],
+          ],
+          Price: [
+            [340, 0.0],
+            [420, 0.33],
+            [500, 1.0],
+            [580, 0.77],
+          ],
+        },
+        Savers: {
+          Design: [
+            [6, 0.23],
+            [7, 0.62],
+            [8, 0.63],
+            [9, 0.59],
+          ],
+          Display: [
+            [15, 0.49],
+            [21, 0.53],
+            [27, 0.53],
+            [33, 0.53],
+          ],
+          Power: [
+            [19, 0.33],
+            [35, 0.8],
+            [51, 0.74],
+            [67, 0.2],
+          ],
+          Price: [
+            [148, 0.19],
+            [228, 1.0],
+            [308, 0.88],
+            [388, 0.0],
+          ],
+        },
+      };
+
+      function init() {
+        const segSelect = document.getElementById("segment");
+        const charSelect = document.getElementById("characteristic");
+
+        for (const seg in data) segSelect.add(new Option(seg, seg));
+        for (const char in data["Explorers"])
+          charSelect.add(new Option(char, char));
+
+        draw();
+      }
+
+      function draw() {
+        const seg = document.getElementById("segment").value;
+        const char = document.getElementById("characteristic").value;
+        const rawPoints = data[seg][char];
+        const targetPercentile = parseFloat(
+          document.getElementById("percentileSlider").value,
+        );
+
+        document.getElementById("sliderValLabel").textContent =
+          `${targetPercentile}%`;
+
+        const minRawX = rawPoints[0][0];
+        const maxRawX = rawPoints[rawPoints.length - 1][0];
+        const physicalRange = maxRawX - minRawX;
+
+        // Convert Percentile to Raw Target X
+        const targetRawX = minRawX + (targetPercentile / 100) * physicalRange;
+        document.getElementById("rawTarget").textContent =
+          targetRawX.toFixed(1);
+
+        // Convert raw points to Percentile points for plotting [Percentile, Utility]
+        const plotPoints = rawPoints.map((p) => {
+          const perc = ((p[0] - minRawX) / physicalRange) * 100;
+          return [perc, p[1]];
+        });
+
+        // Calculate Interpolated Utility using Percentile Map
+        let targetY = 0;
+        for (let i = 0; i < plotPoints.length - 1; i++) {
+          if (
+            targetPercentile >= plotPoints[i][0] &&
+            targetPercentile <= plotPoints[i + 1][0]
+          ) {
+            const x1 = plotPoints[i][0],
+              y1 = plotPoints[i][1];
+            const x2 = plotPoints[i + 1][0],
+              y2 = plotPoints[i + 1][1];
+            // Avoid divide by zero if points somehow stack
+            if (x2 === x1) {
+              targetY = y1;
+              break;
+            }
+            targetY = y1 + ((targetPercentile - x1) * (y2 - y1)) / (x2 - x1);
+            break;
+          }
+        }
+        document.getElementById("utilityResult").textContent =
+          targetY.toFixed(3);
+
+        // Draw Canvas
+        const canvas = document.getElementById("chartCanvas");
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width;
+        const H = canvas.height;
+        const pad = 40;
+
+        ctx.clearRect(0, 0, W, H);
+
+        const getX = (perc) => pad + (perc / 100) * (W - pad * 2);
+        const getY = (y) => H - pad - y * (H - pad * 2); // Y is 0 to 1 fixed
+
+        // Grid lines (Y-axis Utilities)
+        ctx.strokeStyle = "#313244";
+        ctx.lineWidth = 1;
+        [0, 0.25, 0.5, 0.75, 1].forEach((y) => {
+          ctx.beginPath();
+          ctx.moveTo(pad, getY(y));
+          ctx.lineTo(W - pad, getY(y));
+          ctx.stroke();
+          ctx.fillStyle = "#a6adc8";
+          ctx.font = "12px sans-serif";
+          ctx.fillText(y.toFixed(2), 5, getY(y) + 4);
+        });
+
+        // Grid lines (X-axis Percentiles)
+        [0, 25, 50, 75, 100].forEach((x) => {
+          ctx.fillStyle = "#a6adc8";
+          ctx.font = "12px sans-serif";
+          ctx.fillText(x + "%", getX(x) - 10, H - 10);
+        });
+
+        // Draw Line
+        ctx.strokeStyle = "#cba6f7";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        plotPoints.forEach((p, i) => {
+          if (i === 0) ctx.moveTo(getX(p[0]), getY(p[1]));
+          else ctx.lineTo(getX(p[0]), getY(p[1]));
+        });
+        ctx.stroke();
+
+        // Draw Points
+        ctx.fillStyle = "#1e1e2e";
+        plotPoints.forEach((p) => {
+          ctx.beginPath();
+          ctx.arc(getX(p[0]), getY(p[1]), 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+
+        // Draw Target Marker
+        ctx.fillStyle = "#a6e3a1";
+        ctx.strokeStyle = "#1e1e2e";
+        ctx.beginPath();
+        ctx.arc(getX(targetPercentile), getY(targetY), 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Target vertical dash line
+        ctx.beginPath();
+        ctx.setLineDash([5, 5]);
+        ctx.moveTo(getX(targetPercentile), getY(targetY));
+        ctx.lineTo(getX(targetPercentile), H - pad);
+        ctx.strokeStyle = "#a6e3a1";
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      window.onload = init;
+    </script>
+  </body>
+</html>
